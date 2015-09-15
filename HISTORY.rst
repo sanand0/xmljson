@@ -3,7 +3,8 @@
 History
 -------
 
-0.1.0 (2015-09-14)
----------------------
+0.1.0 (2015-09-15)
+~~~~~~~~~~~~~~~~~~
 
-* First release on PyPI.
+- Two-way conversions via BadgerFish, GData and Parker conventions.
+- First release on PyPI.

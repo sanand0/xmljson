@@ -55,12 +55,13 @@ If you are proposing a feature:
 Get Started!
 ------------
 
-Ready to contribute? Here's how to set up `xmljson` for local development.
+``xmljson`` runs on Python 2.6+ and Python 3+ in any OS. To set up the development
+environment:
 
-1. Fork the `xmljson` repo on GitHub.
+1. Fork the `xmljson repo <https://github.com/sanand0/xmljson>`__
 2. Clone your fork locally::
 
-    $ git clone git@github.com:your_name_here/xmljson.git
+    git clone git@github.com:your_user_id/xmljson.git
 
 3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
 
@@ -70,25 +71,31 @@ Ready to contribute? Here's how to set up `xmljson` for local development.
 
 4. Create a branch for local development::
 
-    $ git checkout -b name-of-your-bugfix-or-feature
+    git checkout -b <branch-name>
 
    Now you can make your changes locally.
 
-5. When you're done making changes, check that your changes pass flake8 and the tests, including testing other Python versions with tox::
+5. When you're done making changes, check that your changes pass flake8 and the
+   tests, as well as provide reasonable test coverage::
 
-    $ flake8 xmljson tests
-    $ python setup.py test
-    $ tox
+    make release-test
 
-   To get flake8 and tox, just pip install them into your virtualenv.
+   **Note**: This uses the ``python.exe`` in your ``PATH``. To change the Python
+   used, run::
 
-6. Commit your changes and push your branch to GitHub::
+    export PYTHON=/path/to/python         # e.g. path to Python 3.4+
+
+6. Commit your changes and push your branch to GitHub. Then send a pull
+   request::
 
     $ git add .
     $ git commit -m "Your detailed description of your changes."
-    $ git push origin name-of-your-bugfix-or-feature
+    $ git push --set-upstream origin <branch-name>
 
-7. Submit a pull request through the GitHub website.
+7. To delete your branch::
+
+    git branch -d <branch-name>
+    git push origin --delete <branch-name>
 
 Pull Request Guidelines
 -----------------------
@@ -99,13 +106,25 @@ Before you submit a pull request, check that it meets these guidelines:
 2. If the pull request adds functionality, the docs should be updated. Put
    your new functionality into a function with a docstring, and add the
    feature to the list in README.rst.
-3. The pull request should work for Python 2.6, 2.7, 3.3, and 3.4, and for PyPy. Check
-   https://travis-ci.org/sanand0/xmljson/pull_requests
-   and make sure that the tests pass for all supported Python versions.
+3. The pull request should work for Python 2.7 and 3.4.
 
-Tips
-----
+Release
+-------
 
-To run a subset of tests::
+1. Test the release by running::
 
-    $ python -m unittest tests.test_xmljson
+    make test-release
+
+2. Update ``__version__ = x.x.x`` in :mod:`xmljson` and commit.
+
+3. Create an annotated tag and push the code::
+
+    git tag -a vx.x.x
+    git push --follow-tags
+
+4. To `release to PyPi`_, run::
+
+    python3 setup.py sdist bdist_wheel --universal
+    twine upload dist/*
+
+.. _release to PyPi: https://packaging.python.org/en/latest/distributing.html

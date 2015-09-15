@@ -1,15 +1,9 @@
-.PHONY: clean-pyc clean-build docs clean
-define BROWSER_PYSCRIPT
-import os, webbrowser, sys
-try:
-	from urllib import pathname2url
-except:
-	from urllib.request import pathname2url
+# Set the environment variable PYTHON to your custom Python exe
+PYTHON ?= python
 
-webbrowser.open("file://" + pathname2url(os.path.abspath(sys.argv[1])))
-endef
-export BROWSER_PYSCRIPT
-BROWSER := python -c "$$BROWSER_PYSCRIPT"
+.PHONY: clean-pyc clean-build docs clean
+
+BROWSER := $(PYTHON) -c "import os, sys; os.startfile(os.path.abspath(sys.argv[1]))"
 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
@@ -49,15 +43,15 @@ lint:
 	flake8 xmljson tests
 
 test:
-	python setup.py test
+	$(PYTHON) setup.py test
 
 test-all:
 	tox
 
 coverage:
-	coverage run --source xmljson setup.py test
-	coverage report -m
-	coverage html
+	$(PYTHON) -m coverage run --include='xmljson*' setup.py test
+	$(PYTHON) -m coverage report -m
+	$(PYTHON) -m coverage html
 	$(BROWSER) htmlcov/index.html
 
 docs:
@@ -68,14 +62,16 @@ docs:
 	$(MAKE) -C docs html
 	$(BROWSER) docs/_build/html/index.html
 
+release-test: clean-test lint docs test coverage
+
 release: clean
-	python setup.py sdist upload
-	python setup.py bdist_wheel upload
+	$(PYTHON) setup.py sdist upload
+	$(PYTHON) setup.py bdist_wheel upload
 
 dist: clean
-	python setup.py sdist
-	python setup.py bdist_wheel
+	$(PYTHON) setup.py sdist
+	$(PYTHON) setup.py bdist_wheel
 	ls -l dist
 
 install: clean
-	python setup.py install
+	$(PYTHON) setup.py install
