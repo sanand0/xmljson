@@ -124,7 +124,7 @@ Release
 
 4. To `release to PyPi`_, run::
 
-    python3 setup.py sdist bdist_wheel --universal
+    python setup.py sdist bdist_wheel --universal
     twine upload dist/*
 
 .. _release to PyPi: https://packaging.python.org/en/latest/distributing.html
