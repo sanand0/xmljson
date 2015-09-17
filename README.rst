@@ -36,8 +36,8 @@ can be converted into this data structure (which also a valid JSON object)::
         } }
     ] }
 
-This uses the `BadgerFish`_ convention that prefixes attributes with ``@``. Some
-popular conventions supported by this library are:
+This uses the `BadgerFish`_ convention that prefixes attributes with ``@``.
+Other conventions supported by this library are:
 
 * `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes,
 * `GData`_: Use ``"$"`` for text content, ignore attributes
@@ -45,7 +45,7 @@ popular conventions supported by this library are:
 
 .. _BadgerFish: http://www.sklar.com/badgerfish/
 .. _GData: http://wiki.open311.org/JSON_and_XML_Conversion/#the-gdata-convention
-.. _Parker: http://wiki.open311.org/JSON_and_XML_Conversion/#the-parker-convention
+.. _Parker: https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
 
 Usage
 -----

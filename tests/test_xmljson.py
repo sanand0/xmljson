@@ -61,7 +61,10 @@ class TestXmlJson(unittest.TestCase):
                 decode(etree.tostring(bf.etree({'p': {'$': 1}}, etree.fromstring('<html/>')))),
                 '<html><p>1</p></html>')
 
-    def test_badgerfish_etree(self):
+
+class TestBadgerFish(TestXmlJson):
+
+    def test_etree(self):
         'BadgerFish conversion from data to etree'
         eq = self.check_etree(xmljson.BadgerFish(dict_type=od))
 
@@ -99,7 +102,7 @@ class TestXmlJson(unittest.TestCase):
         eq({'alice': {'$': 'bob', '@charlie': 'david'}},
             '<alice charlie="david">bob</alice>')
 
-    def test_badgerfish_data(self):
+    def test_data(self):
         'BadgerFish conversion from etree to data'
         eq = self.check_data(xmljson.BadgerFish(dict_type=od))
 
@@ -134,7 +137,10 @@ class TestXmlJson(unittest.TestCase):
         eq({'alice': {'$': 'bob', '@charlie': 'david'}},
             '<alice charlie="david">bob</alice>')
 
-    def test_parker_etree(self):
+
+class TestParker(TestXmlJson):
+
+    def test_etree(self):
         'Parker conversion from data to etree'
         eq = self.check_etree(xmljson.Parker(dict_type=od))
 
@@ -158,7 +164,8 @@ class TestXmlJson(unittest.TestCase):
         eq({'alice': {'bob': [{'charlie': {}}, {'david': {}}]}},
            '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
 
-    def test_parker_data(self):
+    @unittest.skip('WIP')
+    def test_data(self):
         'Parker conversion from etree to data'
         eq = self.check_data(xmljson.Parker(dict_type=od))
 
@@ -176,7 +183,49 @@ class TestXmlJson(unittest.TestCase):
         eq({'alice': {'bob': [{'charlie': {}}, {'david': {}}]}},
            '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
 
-    def test_gdata_etree(self):
+        # https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
+
+        # The root element will be absorbed, for there is only one:
+        eq("test", '<root>text</root>')
+
+        # Element names become object properties:
+        eq({'name': 'Xml', 'encoding': 'ASCII'},
+           '<root><name>Xml</name><encoding>ASCII</encoding></root>')
+
+        # Numbers are recognized (integers and decimals):
+        eq({'age': 12, 'height': 1.73},
+           '<root><age>12</age><height>1.73</height></root>')
+
+        # Booleans are recognized case insensitive:
+        eq({'checked': True, 'answer': False},
+           '<root><checked>True</checked><answer>FALSE</answer></root>')
+
+        # Strings are escaped:
+        eq('Quote: " New-line:\n',
+           '<root>Quote: &quot; New-line:\n</root>')
+
+        # Empty elements will become null:
+        eq({'nil': None, 'empty': None},
+           '<root><nil/><empty></empty></root>')
+
+        # If all sibling elements have the same name, they become an array
+        eq([1, 2, "three"],
+           '<root><item>1</item><item>2</item><item>three</item></root>')
+        eq({'item': [1, 2]},
+           '<root><item>1</item><item>2</item></root>')
+
+        # Mixed mode text-nodes, comments and attributes get absorbed:
+        eq({'element': 1},
+           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
+
+        # Namespaces get absorbed, and prefixes will just be part of the property name:
+        eq('{"ding:dong": "binnen"}'
+           '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
+
+
+class TestGData(TestXmlJson):
+
+    def test_etree(self):
         'GData conversion from etree to data'
         eq = self.check_etree(xmljson.GData(dict_type=od))
 
@@ -216,7 +265,7 @@ class TestXmlJson(unittest.TestCase):
         eq({'alice': {'$t': 'bob'}},
             '<alice>bob</alice>')
 
-    def test_gdata_data(self):
+    def test_data(self):
         'GData conversion from data to etree'
         eq = self.check_data(xmljson.GData(dict_type=od))
 
