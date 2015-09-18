@@ -3,6 +3,12 @@
 History
 -------
 
+0.1.1 (2015-09-18)
+~~~~~~~~~~~~~~~~~~
+
+- Convert ``true``, ``false`` and numeric values from strings to Python types
+- ``xmljson.parker.data()`` is compliant with Parker convention (bugs resolved)
+
 0.1.0 (2015-09-15)
 ~~~~~~~~~~~~~~~~~~
 

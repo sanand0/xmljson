@@ -115,10 +115,13 @@ Release
 
     make release-test
 
-2. Update ``__version__ = x.x.x`` in :mod:`xmljson` and commit.
+2. Update ``__version__ = x.x.x`` in :mod:`xmljson`
 
-3. Create an annotated tag and push the code::
+3. Update ``HISTORY.rst`` with changes
 
+3. Commit, create an annotated tag and push the code::
+
+    git commit .
     git tag -a vx.x.x
     git push --follow-tags
 
