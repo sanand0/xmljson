@@ -9,6 +9,7 @@ Tests for `xmljson` module.
 '''
 
 import sys
+import json
 import unittest
 
 from collections import OrderedDict as od
@@ -42,16 +43,17 @@ class TestXmlJson(unittest.TestCase):
         return assertEqual
 
     def check_data(self, conv):
-        def assertEqual(obj, string):
-            result_obj = conv.data(fromstring(string))
-            self.assertEqual(obj, result_obj)
+        def assertEqual(jsonstring, xmlstring):
+            first = json.loads(jsonstring, object_pairs_hook=od)
+            second = conv.data(fromstring(xmlstring))
+            self.assertEqual(first, second)
 
         return assertEqual
 
     def test_custom_dict(self):
         'Conversion to dict uses OrderedDict'
         eq = self.check_data(xmljson.BadgerFish(dict_type=od))
-        eq({'root': od([('a', {}), ('x', {}), ('b', {}), ('y', {}), ('c', {}), ('z', {})])},
+        eq('{"root": {"a": {}, "x": {}, "b": {}, "y": {}, "c": {}, "z": {}}}',
            '<root><a/><x/><b/><y/><c/><z/></root>')
 
     def test_custom_root(self):
@@ -107,34 +109,32 @@ class TestBadgerFish(TestXmlJson):
         eq = self.check_data(xmljson.BadgerFish(dict_type=od))
 
         # Dicts
-        eq({'x': {'a': {}}}, '<x><a/></x>')
-        eq({'x': {'@x': 1}}, '<x x="1"/>')
-        eq({'root': od([('x', {'@x': 1}), ('y', {'z': {}})])},
+        eq('{"x": {"a": {}}}', '<x><a/></x>')
+        eq('{"x": {"@x": 1}}', '<x x="1"/>')
+        eq('{"root": {"x": {"@x": 1}, "y": {"z": {}}}}',
            '<root><x x="1"/><y><z/></y></root>')
 
         # Attributes
-        eq({'p': {'@id': 1, '$': 'text'}}, '<p id="1">text</p>')
-        eq({'div': {'@id': 2, '$': 'parent-text', 'p': {'$': 'text'}}},
-            '<div id="2">parent-text<p>text</p></div>')
+        eq('{"p": {"@id": 1, "$": "text"}}', '<p id="1">text</p>')
+        eq('{"div": {"@id": 2, "$": "parent-text", "p": {"$": "text"}}}',
+           '<div id="2">parent-text<p>text</p></div>')
 
         # From http://www.sklar.com/badgerfish/
         # Text content of elements goes in the $ property of an object.
-        eq({'alice': {'$': 'bob'}}, '<alice>bob</alice>')
+        eq('{"alice": {"$": "bob"}}', '<alice>bob</alice>')
 
         # Nested elements become nested properties
-        eq({'alice': od([
-            ('bob', {'$': 'charlie'}),
-            ('david', {'$': 'edgar'})])},
+        eq('{"alice": {"bob": {"$": "charlie"}, "david": {"$": "edgar"}}}',
            '<alice><bob>charlie</bob><david>edgar</david></alice>')
 
         # Multiple elements at the same level become array elements.
-        eq({'alice': {'bob': {'$': 'charlie'}}},
+        eq('{"alice": {"bob": {"$": "charlie"}}}',
            '<alice><bob>charlie</bob></alice>')
-        eq({'alice': {'bob': [{'$': 'charlie'}, {'$': 'david'}]}},
+        eq('{"alice": {"bob": [{"$": "charlie"}, {"$": "david"}]}}',
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
 
         # Attributes go in properties whose names begin with @.
-        eq({'alice': {'$': 'bob', '@charlie': 'david'}},
+        eq('{"alice": {"@charlie": "david", "$": "bob"}}',
             '<alice charlie="david">bob</alice>')
 
 
@@ -169,53 +169,53 @@ class TestParker(TestXmlJson):
         eq = self.check_data(xmljson.Parker(dict_type=od))
 
         # Dicts
-        eq(None, '<x/>')
-        eq(od([('x', None), ('y', {'z': None})]),
+        eq('null', '<x/>')
+        eq('{"x": null, "y": {"z": null}}',
            '<root><x/><y><z/></y></root>')
 
         # Nested elements become nested properties
-        eq({'bob': None, 'david': None},
+        eq('{"bob": null, "david": null}',
            '<root><bob/><david/></root>')
 
         # https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
 
         # The root element will be absorbed, for there is only one:
-        eq('text', '<root>text</root>')
+        eq('"text"', '<root>text</root>')
 
         # Element names become object properties:
-        eq({'name': 'Xml', 'encoding': 'ASCII'},
+        eq('{"name": "Xml", "encoding": "ASCII"}',
            '<root><name>Xml</name><encoding>ASCII</encoding></root>')
 
         # Numbers are recognized (integers and decimals):
-        eq({'age': 12, 'height': 1.73},
+        eq('{"age": 12, "height": 1.73}',
            '<root><age>12</age><height>1.73</height></root>')
 
         # Booleans are recognized case insensitive:
-        eq({'checked': True, 'answer': False},
+        eq('{"checked": true, "answer": false}',
            '<root><checked>True</checked><answer>FALSE</answer></root>')
 
         # Strings are escaped:
-        eq('Quote: " New-line:\n',
+        eq('"Quote: \\" New-line:\\n"',
            '<root>Quote: &quot; New-line:\n</root>')
 
         # Empty elements will become null:
-        eq({'nil': None, 'empty': None},
+        eq('{"nil": null, "empty": null}',
            '<root><nil/><empty></empty></root>')
 
         # If all sibling elements have the same name, they become an array
-        eq({'bob': [{'charlie': None}, {'david': None}]},
+        eq('{"bob": [{"charlie": null}, {"david": null}]}',
            '<root><bob><charlie/></bob><bob><david/></bob></root>')
-        eq({'item': [1, 2, "three"]},
+        eq('{"item": [1, 2, "three"]}',
            '<root><item>1</item><item>2</item><item>three</item></root>')
-        eq({'item': [1, 2]},
+        eq('{"item": [1, 2]}',
            '<root><item>1</item><item>2</item></root>')
 
         # Mixed mode text-nodes, comments and attributes get absorbed:
-        eq({'element': 1},
+        eq('{"element": 1}',
            '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
 
         # Namespaces get absorbed, and prefixes will just be part of the property name:
-        eq({'{http://zanstra.com/ding}dong': 'binnen'},
+        eq('{"{http://zanstra.com/ding}dong": "binnen"}',
            '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
 
 
@@ -266,34 +266,32 @@ class TestGData(TestXmlJson):
         eq = self.check_data(xmljson.GData(dict_type=od))
 
         # Dicts
-        eq({'x': {'a': {}}}, '<x><a/></x>')
-        eq({'x': {'y': {'z': {}}}}, '<x><y><z/></y></x>')
-        eq({'root': od([('x', {}), ('y', {'z': {}})])},
+        eq('{"x": {"a": {}}}', '<x><a/></x>')
+        eq('{"x": {"y": {"z": {}}}}', '<x><y><z/></y></x>')
+        eq('{"root": {"x": {}, "y": {"z": {}}}}',
            '<root><x/><y><z/></y></root>')
 
         # Attributes
-        eq({'p': {'$t': 'text'}}, '<p>text</p>')
-        eq({'div': {'$t': 'parent-text', 'p': {'$t': 'text'}}},
+        eq('{"p": {"$t": "text"}}', '<p>text</p>')
+        eq('{"div": {"$t": "parent-text", "p": {"$t": "text"}}}',
             '<div>parent-text<p>text</p></div>')
 
         # From http://www.sklar.com/badgerfish/
         # Text content of elements goes in the $ property of an object.
-        eq({'alice': {'$t': 'bob'}}, '<alice>bob</alice>')
+        eq('{"alice": {"$t": "bob"}}', '<alice>bob</alice>')
 
         # Nested elements become nested properties
-        eq({'alice': od([
-            ('bob', {'$t': 'charlie'}),
-            ('david', {'$t': 'edgar'})])},
+        eq('{"alice": {"bob": {"$t": "charlie"}, "david": {"$t": "edgar"}}}',
            '<alice><bob>charlie</bob><david>edgar</david></alice>')
 
         # Multiple elements at the same level become array elements.
-        eq({'alice': {'bob': {'$t': 'charlie'}}},
+        eq('{"alice": {"bob": {"$t": "charlie"}}}',
            '<alice><bob>charlie</bob></alice>')
-        eq({'alice': {'bob': [{'$t': 'charlie'}, {'$t': 'david'}]}},
+        eq('{"alice": {"bob": [{"$t": "charlie"}, {"$t": "david"}]}}',
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
 
         # Comments do not matter
-        eq({'root': {'$t': 'testing', 'version': 1.0, 'element': {'$t': 1, 'test': True}}},
+        eq('{"root": {"version": 1.0, "$t": "testing", "element": {"test": true, "$t": 1}}}',
            '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
 
     def test_xml_namespace(self):
