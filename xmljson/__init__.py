@@ -14,6 +14,7 @@ __version__ = '0.1.1'
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
     unicode = str
+    basestring = str
 
 
 class XMLData(object):
