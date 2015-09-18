@@ -43,7 +43,8 @@ class TestXmlJson(unittest.TestCase):
             tree = conv.etree(obj)
             self.assertEqual(len(tree), len(strings))
             for left, right in zip(tree, strings):
-                assert eq(left, fromstring(right))
+                if not eq(left, fromstring(right)):
+                    raise AssertionError('%s != %s' % (decode(tostring(left)), right))
 
         return assertEqual
 
