@@ -34,6 +34,7 @@ class TestXmlJson(unittest.TestCase):
         pass
 
     def check_etree(self, conv):
+        'Returns method(obj, xmlstring) that converts obj to XML and compares'
         def assertEqual(obj, *strings):
             tree = conv.etree(obj)
             self.assertEqual(len(tree), len(strings))
@@ -43,6 +44,7 @@ class TestXmlJson(unittest.TestCase):
         return assertEqual
 
     def check_data(self, conv):
+        'Returns method(jsonstring, xmlstring) that unparses both and checks'
         def assertEqual(jsonstring, xmlstring):
             first = json.loads(jsonstring, object_pairs_hook=od)
             second = conv.data(fromstring(xmlstring))
