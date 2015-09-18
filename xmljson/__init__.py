@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.0'
+__version__ = '0.1.1'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -25,10 +25,28 @@ class XMLData(object):
         self.attr_prefix = attr_prefix
         self.text_content = text_content
 
+    @staticmethod
+    def _convert(value):
+        'Convert string value to None, boolean, int or float'
+        if not value:
+            return None
+        std_value = value.strip().lower()
+        if std_value == 'true':
+            return True
+        elif std_value == 'false':
+            return False
+        try:
+            return int(std_value)
+        except ValueError:
+            pass
+        try:
+            return float(std_value)
+        except ValueError:
+            pass
+        return value
+
     def etree(self, data, root=None):
-        '''
-        Converts data structure into ...
-        '''
+        'Convert data structure into etree'
         result = [] if root is None else root
         if isinstance(data, dict):
             for key, value in data.items():
@@ -59,13 +77,14 @@ class XMLData(object):
         return result
 
     def data(self, root):
+        'Convert etree into data structure'
         value = self.dict()
         for attr, attrval in root.attrib.items():
             attr = attr if self.attr_prefix is None else self.attr_prefix + attr
-            value[attr] = attrval
+            value[attr] = self._convert(attrval)
         if root.text and self.text_content is not None:
-            value[self.text_content] = root.text
-        children = list(root)
+            value[self.text_content] = self._convert(root.text)
+        children = [node for node in root if isinstance(node.tag, basestring)]
         count = Counter(child.tag for child in children)
         for child in children:
             if count[child.tag] == 1:
@@ -92,6 +111,23 @@ class Parker(XMLData):
     'Converts between XML and data using the Parker convention'
     def __init__(self, **kwargs):
         super(Parker, self).__init__(**kwargs)
+
+    def data(self, root):
+        # If no children, just return the text
+        children = [node for node in root if isinstance(node.tag, basestring)]
+        if len(children) == 0:
+            return self._convert(root.text)
+
+        # Element names become object properties
+        count = Counter(child.tag for child in children)
+        result = {}
+        for child in children:
+            if count[child.tag] == 1:
+                result[child.tag] = self.data(child)
+            else:
+                result.setdefault(child.tag, []).append(self.data(child))
+
+        return result
 
 badgerfish = BadgerFish()
 gdata = GData()

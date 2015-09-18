@@ -108,13 +108,13 @@ class TestBadgerFish(TestXmlJson):
 
         # Dicts
         eq({'x': {'a': {}}}, '<x><a/></x>')
-        eq({'x': {'@x': '1'}}, '<x x="1"/>')
-        eq({'root': od([('x', {'@x': '1'}), ('y', {'z': {}})])},
+        eq({'x': {'@x': 1}}, '<x x="1"/>')
+        eq({'root': od([('x', {'@x': 1}), ('y', {'z': {}})])},
            '<root><x x="1"/><y><z/></y></root>')
 
         # Attributes
-        eq({'p': {'@id': '1', '$': 'text'}}, '<p id="1">text</p>')
-        eq({'div': {'@id': '2', '$': 'parent-text', 'p': {'$': 'text'}}},
+        eq({'p': {'@id': 1, '$': 'text'}}, '<p id="1">text</p>')
+        eq({'div': {'@id': 2, '$': 'parent-text', 'p': {'$': 'text'}}},
             '<div id="2">parent-text<p>text</p></div>')
 
         # From http://www.sklar.com/badgerfish/
@@ -164,29 +164,23 @@ class TestParker(TestXmlJson):
         eq({'alice': {'bob': [{'charlie': {}}, {'david': {}}]}},
            '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
 
-    @unittest.skip('WIP')
     def test_data(self):
         'Parker conversion from etree to data'
         eq = self.check_data(xmljson.Parker(dict_type=od))
 
         # Dicts
-        eq({'x': {'a': {}}}, '<x><a/></x>')
-        eq({'x': {}}, '<x/>')
-        eq({'root': od([('x', {}), ('y', {'z': {}})])},
+        eq(None, '<x/>')
+        eq(od([('x', None), ('y', {'z': None})]),
            '<root><x/><y><z/></y></root>')
 
         # Nested elements become nested properties
-        eq({'alice': {'bob': {}, 'david': {}}},
-           '<alice><bob/><david/></alice>')
-
-        # Multiple elements at the same level become array elements.
-        eq({'alice': {'bob': [{'charlie': {}}, {'david': {}}]}},
-           '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
+        eq({'bob': None, 'david': None},
+           '<root><bob/><david/></root>')
 
         # https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
 
         # The root element will be absorbed, for there is only one:
-        eq("test", '<root>text</root>')
+        eq('text', '<root>text</root>')
 
         # Element names become object properties:
         eq({'name': 'Xml', 'encoding': 'ASCII'},
@@ -209,7 +203,9 @@ class TestParker(TestXmlJson):
            '<root><nil/><empty></empty></root>')
 
         # If all sibling elements have the same name, they become an array
-        eq([1, 2, "three"],
+        eq({'bob': [{'charlie': None}, {'david': None}]},
+           '<root><bob><charlie/></bob><bob><david/></bob></root>')
+        eq({'item': [1, 2, "three"]},
            '<root><item>1</item><item>2</item><item>three</item></root>')
         eq({'item': [1, 2]},
            '<root><item>1</item><item>2</item></root>')
@@ -219,7 +215,7 @@ class TestParker(TestXmlJson):
            '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
 
         # Namespaces get absorbed, and prefixes will just be part of the property name:
-        eq('{"ding:dong": "binnen"}'
+        eq({'{http://zanstra.com/ding}dong': 'binnen'},
            '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
 
 
@@ -295,6 +291,10 @@ class TestGData(TestXmlJson):
            '<alice><bob>charlie</bob></alice>')
         eq({'alice': {'bob': [{'$t': 'charlie'}, {'$t': 'david'}]}},
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
+
+        # Comments do not matter
+        eq({'root': {'$t': 'testing', 'version': 1.0, 'element': {'$t': 1, 'test': True}}},
+           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
 
     def test_xml_namespace(self):
         'XML namespaces are not yet implemented'
