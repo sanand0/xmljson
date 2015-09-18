@@ -6,7 +6,8 @@ History
 0.1.2 (2015-09-18)
 ~~~~~~~~~~~~~~~~~~
 
-- Always use the ``dict_type`` class to create dictionaries
+- Always use the ``dict_type`` class to create dictionaries (which defaults to
+  ``OrderedDict`` to preserve order of keys)
 - Update documentation, test cases
 - Remove support for Python 2.6 (since we need collections.Counter)
 

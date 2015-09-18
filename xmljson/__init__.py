@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sys
-from collections import Counter
+from collections import Counter, OrderedDict
 try:
     from lxml.etree import Element
 except ImportError:
@@ -21,7 +21,7 @@ class XMLData(object):
     def __init__(self, element=None, dict_type=None, list_type=None,
                  attr_prefix=None, text_content=None):
         self.element = Element if element is None else element
-        self.dict = dict if dict_type is None else dict_type
+        self.dict = OrderedDict if dict_type is None else dict_type
         self.list = list if list_type is None else list_type
         self.attr_prefix = attr_prefix
         self.text_content = text_content

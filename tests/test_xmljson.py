@@ -106,9 +106,13 @@ class TestBadgerFish(TestXmlJson):
         eq({'alice': {'$': 'bob', '@charlie': 'david'}},
             '<alice charlie="david">bob</alice>')
 
+    def test_html(self):
+        'Test real-life HTML scenarios'
+        eq = self.check_data(xmljson.badgerfish)
+
     def test_data(self):
         'BadgerFish conversion from etree to data'
-        eq = self.check_data(xmljson.BadgerFish(dict_type=od))
+        eq = self.check_data(xmljson.badgerfish)
 
         # Dicts
         eq('{"x": {"a": {}}}', '<x><a/></x>')
@@ -144,7 +148,7 @@ class TestParker(TestXmlJson):
 
     def test_etree(self):
         'Parker conversion from data to etree'
-        eq = self.check_etree(xmljson.Parker(dict_type=od))
+        eq = self.check_etree(xmljson.parker)
 
         # Dicts
         eq({})
@@ -168,7 +172,7 @@ class TestParker(TestXmlJson):
 
     def test_data(self):
         'Parker conversion from etree to data'
-        eq = self.check_data(xmljson.Parker(dict_type=od))
+        eq = self.check_data(xmljson.parker)
 
         # Dicts
         eq('null', '<x/>')
@@ -225,7 +229,7 @@ class TestGData(TestXmlJson):
 
     def test_etree(self):
         'GData conversion from etree to data'
-        eq = self.check_etree(xmljson.GData(dict_type=od))
+        eq = self.check_etree(xmljson.gdata)
 
         # Dicts
         eq({})
@@ -265,7 +269,7 @@ class TestGData(TestXmlJson):
 
     def test_data(self):
         'GData conversion from data to etree'
-        eq = self.check_data(xmljson.GData(dict_type=od))
+        eq = self.check_data(xmljson.gdata)
 
         # Dicts
         eq('{"x": {"a": {}}}', '<x><a/></x>')
