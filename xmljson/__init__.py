@@ -48,7 +48,7 @@ class XMLData(object):
 
     def etree(self, data, root=None):
         'Convert data structure into etree'
-        result = [] if root is None else root
+        result = self.list() if root is None else root
         if isinstance(data, dict):
             for key, value in data.items():
                 # Add attributes and text to result (if root)
@@ -91,7 +91,7 @@ class XMLData(object):
             if count[child.tag] == 1:
                 value.update(self.data(child))
             else:
-                result = value.setdefault(child.tag, [])
+                result = value.setdefault(child.tag, self.list())
                 result += self.data(child).values()
         return self.dict([(root.tag, value)])
 
@@ -121,12 +121,12 @@ class Parker(XMLData):
 
         # Element names become object properties
         count = Counter(child.tag for child in children)
-        result = {}
+        result = self.dict()
         for child in children:
             if count[child.tag] == 1:
                 result[child.tag] = self.data(child)
             else:
-                result.setdefault(child.tag, []).append(self.data(child))
+                result.setdefault(child.tag, self.list()).append(self.data(child))
 
         return result
 
