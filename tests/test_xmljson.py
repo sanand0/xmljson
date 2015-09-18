@@ -33,7 +33,7 @@ class TestXmlJson(unittest.TestCase):
     def setUp(self):
         pass
 
-    def check_etree(self, conv):
+    def check_etree(self, conv, tostring=tostring):
         'Returns method(obj, xmlstring) that converts obj to XML and compares'
         def assertEqual(obj, *strings):
             tree = conv.etree(obj)
@@ -54,7 +54,7 @@ class TestXmlJson(unittest.TestCase):
 
     def test_custom_dict(self):
         'Conversion to dict uses OrderedDict'
-        eq = self.check_data(xmljson.BadgerFish(dict_type=od))
+        eq = self.check_data(xmljson.badgerfish)
         eq('{"root": {"a": {}, "x": {}, "b": {}, "y": {}, "c": {}, "z": {}}}',
            '<root><a/><x/><b/><y/><c/><z/></root>')
 
@@ -68,9 +68,9 @@ class TestXmlJson(unittest.TestCase):
 
 class TestBadgerFish(TestXmlJson):
 
-    def test_etree(self):
+    def test_etree(self, converter=None):
         'BadgerFish conversion from data to etree'
-        eq = self.check_etree(xmljson.BadgerFish(dict_type=od))
+        eq = self.check_etree(converter or xmljson.badgerfish)
 
         # Dicts
         eq({})
@@ -108,7 +108,16 @@ class TestBadgerFish(TestXmlJson):
 
     def test_html(self):
         'Test real-life HTML scenarios'
-        eq = self.check_data(xmljson.badgerfish)
+        html_converter = xmljson.BadgerFish(element=lxml.html.Element)
+        self.test_etree(html_converter)
+
+        eq = self.check_etree(html_converter, tostring=lxml.html.tostring)
+        eq({'body': od([
+            ('p', {'$': 'paragraph'}),
+            ('hr', {}),
+            ('ul', {'li': [{'$': '1'}, {'$': '2'}]}),
+            ])},
+           '<body><p>paragraph</p><hr><ul><li>1</li><li>2</li></ul></body>')
 
     def test_data(self):
         'BadgerFish conversion from etree to data'
