@@ -14,6 +14,7 @@ import unittest
 
 from collections import OrderedDict as od
 from lxml.etree import tostring as tostring, fromstring
+from lxml.doctestcompare import LXMLOutputChecker
 import lxml.html
 import lxml.etree
 import xml.etree.cElementTree
@@ -33,13 +34,16 @@ class TestXmlJson(unittest.TestCase):
     def setUp(self):
         pass
 
-    def check_etree(self, conv, tostring=tostring):
+    def check_etree(self, conv, tostring=tostring, fromstring=fromstring):
         'Returns method(obj, xmlstring) that converts obj to XML and compares'
+        checker = LXMLOutputChecker()
+        eq = checker.compare_docs
+
         def assertEqual(obj, *strings):
             tree = conv.etree(obj)
             self.assertEqual(len(tree), len(strings))
             for left, right in zip(tree, strings):
-                self.assertEqual(decode(tostring(left)), ''.join(right))
+                assert eq(left, fromstring(right))
 
         return assertEqual
 
@@ -111,13 +115,14 @@ class TestBadgerFish(TestXmlJson):
         html_converter = xmljson.BadgerFish(element=lxml.html.Element)
         self.test_etree(html_converter)
 
-        eq = self.check_etree(html_converter, tostring=lxml.html.tostring)
-        eq({'body': od([
+        eq = self.check_etree(html_converter, tostring=lxml.html.tostring,
+                              fromstring=lxml.html.fromstring)
+        eq({'div': od([
             ('p', {'$': 'paragraph'}),
             ('hr', {}),
             ('ul', {'li': [{'$': '1'}, {'$': '2'}]}),
             ])},
-           '<body><p>paragraph</p><hr><ul><li>1</li><li>2</li></ul></body>')
+           '<div><p>paragraph</p><hr><ul><li>1</li><li>2</li></ul></div>')
 
     def test_data(self):
         'BadgerFish conversion from etree to data'
