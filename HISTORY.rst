@@ -3,6 +3,13 @@
 History
 -------
 
+0.1.2 (2015-09-18)
+~~~~~~~~~~~~~~~~~~
+
+- Always use the ``dict_type`` class to create dictionaries
+- Update documentation, test cases
+- Remove support for Python 2.6 (since we need collections.Counter)
+
 0.1.1 (2015-09-18)
 ~~~~~~~~~~~~~~~~~~
 

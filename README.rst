@@ -40,15 +40,15 @@ This uses the `BadgerFish`_ convention that prefixes attributes with ``@``.
 Other conventions supported by this library are:
 
 * `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes,
-* `GData`_: Use ``"$"`` for text content, ignore attributes
+* `GData`_: Use ``"$t"`` for text content, ignore attributes
 * `Parker`_: Ignore attributes and text content
 
 .. _BadgerFish: http://www.sklar.com/badgerfish/
 .. _GData: http://wiki.open311.org/JSON_and_XML_Conversion/#the-gdata-convention
 .. _Parker: https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
 
-Usage
------
+Convert data to XML
+-------------------
 
 To convert from a data structure to XML using the BadgerFish convention::
 
@@ -69,7 +69,18 @@ The result can be inserted into any existing root `etree.Element`_::
     >>> root = Element('root')
     >>> result = bf.etree({'p': {'@id': 'main'}}, root=root)
     >>> tostring(result)
-    <root><p id="main"/></root>
+    '<root><p id="main"/></root>'
+
+This includes `lxml.html <http://lxml.de/lxmlhtml.html>`_ as well::
+
+    >>> from lxml.html import Element, tostring
+    >>> root = Element('html')
+    >>> result = bf.etree({'p': {'@id': 'main'}}, root=root)
+    >>> tostring(result, doctype='<!DOCTYPE html>')
+    '<!DOCTYPE html>\n<html><p id="main"></p></html>'
+
+Convert XML to data
+-------------------
 
 To convert from XML to a data structure using the BadgerFish convention::
 
@@ -89,6 +100,9 @@ To preserve the order of attributes and children, specify the ``dict_type`` as
     >>> from xmljson import BadgerFish              # import the class
     >>> bf = BadgerFish(dict_type=OrderedDict)      # pick dict class
 
+Conventions
+-----------
+
 To use a different conversion method, replace ``BadgerFish`` with one of the
 other classes. Currently, these are supported::
 
@@ -106,6 +120,5 @@ This is a pure-Python package built for Python 2.6+ and Python 3.0+. To set up::
 Roadmap
 -------
 
-* Test cases for most HTML and XML scenarious across conventions
 * Test cases for Unicode
 * Support for namespaces and namespace prefixes
