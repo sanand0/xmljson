@@ -9,7 +9,10 @@ History
 - Always use the ``dict_type`` class to create dictionaries (which defaults to
   ``OrderedDict`` to preserve order of keys)
 - Update documentation, test cases
-- Remove support for Python 2.6 (since we need collections.Counter)
+- Remove support for Python 2.6 (since we need ``collections.Counter``)
+- Make the `Travis CI build`_ pass
+
+.. _Travis CI build: https://travis-ci.org/sanand0/xmljson
 
 0.1.1 (2015-09-18)
 ~~~~~~~~~~~~~~~~~~
