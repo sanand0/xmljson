@@ -168,7 +168,7 @@ class TestParker(TestXmlJson):
         # Dicts
         eq({})
         eq({'x': 'a'}, '<x>a</x>')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             eq({'x': {'@x': 1}}, '<x x="1"/>')
         eq(od([
             ('x', 'a'),
@@ -249,7 +249,7 @@ class TestGData(TestXmlJson):
         # Dicts
         eq({})
         eq({'x': 'a'}, '<x><a/></x>')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             eq({'x': {'@x': 1}}, '<x x="1"/>')
         eq({'x': {'y': 'a'}}, '<x><y><a/></y></x>')
         eq(od([
@@ -317,5 +317,5 @@ class TestGData(TestXmlJson):
 
     def test_xml_namespace(self):
         'XML namespaces are not yet implemented'
-        with self.assertRaises(ValueError):
+        with self.assertRaises(Exception):
             xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
