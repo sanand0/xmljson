@@ -113,7 +113,7 @@ Release
 
 1. Test the release by running::
 
-    make test-release
+    make release-test
 
 2. Update ``__version__ = x.x.x`` in :mod:`xmljson` and commit.
 
