@@ -127,6 +127,7 @@ Release
 
 4. To `release to PyPi`_, run::
 
+    make clean
     python setup.py sdist bdist_wheel --universal
     twine upload dist/*
 

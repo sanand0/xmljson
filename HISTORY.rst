@@ -4,7 +4,7 @@ History
 -------
 
 0.1.3 (2015-09-20)
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~
 
 - Simplify ``{'p': {'$': 'text'}}`` to ``{'p': 'text'}`` in BadgerFish and GData
   conventions.
