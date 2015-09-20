@@ -3,13 +3,13 @@
 History
 -------
 
-0.1.4 (2015-09-20)
+0.1.4 (20 Sep 2015)
 ~~~~~~~~~~~~~~~~~~
 
 - Fix ``GData.etree()`` conversion of attributes. (They were ignored. They
   should be added as-is.)
 
-0.1.3 (2015-09-20)
+0.1.3 (20 Sep 2015)
 ~~~~~~~~~~~~~~~~~~
 
 - Simplify ``{'p': {'$': 'text'}}`` to ``{'p': 'text'}`` in BadgerFish and GData
@@ -19,7 +19,7 @@ History
 
 .. _MDN JXON article: https://developer.mozilla.org/en-US/docs/JXON#In_summary
 
-0.1.2 (2015-09-18)
+0.1.2 (18 Sep 2015)
 ~~~~~~~~~~~~~~~~~~
 
 - Always use the ``dict_type`` class to create dictionaries (which defaults to
@@ -30,13 +30,13 @@ History
 
 .. _Travis CI build: https://travis-ci.org/sanand0/xmljson
 
-0.1.1 (2015-09-18)
+0.1.1 (18 Sep 2015)
 ~~~~~~~~~~~~~~~~~~
 
 - Convert ``true``, ``false`` and numeric values from strings to Python types
 - ``xmljson.parker.data()`` is compliant with Parker convention (bugs resolved)
 
-0.1.0 (2015-09-15)
+0.1.0 (15 Sep 2015)
 ~~~~~~~~~~~~~~~~~~
 
 - Two-way conversions via BadgerFish, GData and Parker conventions.
