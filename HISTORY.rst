@@ -3,6 +3,12 @@
 History
 -------
 
+0.1.4 (2015-09-20)
+~~~~~~~~~~~~~~~~~~
+
+- Fix ``GData.etree()`` conversion of attributes. (They were ignored. They
+  should be added as-is.)
+
 0.1.3 (2015-09-20)
 ~~~~~~~~~~~~~~~~~~
 

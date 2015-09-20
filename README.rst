@@ -40,7 +40,7 @@ This uses the `BadgerFish`_ convention that prefixes attributes with ``@``.
 The conventions supported by this library are:
 
 * `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes,
-* `GData`_: Use ``"$t"`` for text content, ignore attributes
+* `GData`_: Use ``"$t"`` for text content, attributes added as-is
 * `Parker`_: Use tail nodes for text content, ignore attributes
 
 .. _BadgerFish: http://www.sklar.com/badgerfish/

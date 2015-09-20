@@ -129,7 +129,7 @@ class TestBadgerFish(TestXmlJson):
             '<alice charlie="david">bob</alice>')
 
     def test_html(self):
-        'Test real-life HTML scenarios'
+        'BadgerFish conversion from data to HTML'
         html_converter = xmljson.BadgerFish(element=lxml.html.Element)
         self.test_etree(html_converter)
 
@@ -186,14 +186,19 @@ class TestGData(TestXmlJson):
         eq({'animal': {}}, '<animal/>')
         eq({'animal': 'Deka'}, '<animal>Deka</animal>')
         eq({'animal': 1}, '<animal>1</animal>')
+        eq({'animal': {'name': 1}}, '<animal name="1"/>')
         eq({'animal': {'$t': 'is my cat'}},
            '<animal>is my cat</animal>')
-        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+        eq({'animal': od([('dog', {'$t': 'Charlie'}), ('cat', {'$t': 'Deka'})])},
            '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
+        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+           '<animal dog="Charlie" cat="Deka"/>')
         eq({'animal': {'dog': ['Charlie', 'Mad Max']}},
            '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
-        eq({'animal': {'$t': ' in my house ', 'dog': 'Charlie'}},
+        eq({'animal': {'$t': ' in my house ', 'dog': {'$t': 'Charlie'}}},
            '<animal> in my house <dog>Charlie</dog></animal>')
+        eq({'animal': {'$t': ' in my house ', 'dog': 'Charlie'}},
+           '<animal dog="Charlie"> in my house </animal>')
 
         # Test edge cases
         eq('x', '<x/>')             # Strings become elements

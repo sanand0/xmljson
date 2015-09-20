@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.3'
+__version__ = '0.1.4'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -47,31 +47,44 @@ class XMLData(object):
         return value
 
     def etree(self, data, root=None):
-        'Convert data structure into etree'
+        'Convert data structure into a list of etree.Element'
         result = self.list() if root is None else root
         if isinstance(data, (self.dict, dict)):
             for key, value in data.items():
+                value_is_list = isinstance(value, (self.list, list))
+                value_is_dict = isinstance(value, (self.dict, dict))
                 # Add attributes and text to result (if root)
                 if root is not None:
-                    if self.attr_prefix is not None and key.startswith(self.attr_prefix):
-                        key = key.lstrip(self.attr_prefix)
-                        # @xmlns: {$: xxx, svg: yyy} becomes xmlns="xxx" xmlns:svg="yyy"
-                        if isinstance(value, (self.dict, dict)):
-                            raise ValueError('XML namespaces not yet supported')
-                        else:
+                    # Handle attribute prefixes (BadgerFish)
+                    if self.attr_prefix is not None:
+                        if key.startswith(self.attr_prefix):
+                            key = key.lstrip(self.attr_prefix)
+                            # @xmlns: {$: xxx, svg: yyy} becomes xmlns="xxx" xmlns:svg="yyy"
+                            if value_is_dict:
+                                raise ValueError('XML namespaces not yet supported')
+                            else:
+                                result.set(key, unicode(value))
+                            continue
+                    # Handle text content (BadgerFish, GData)
+                    if self.text_content is not None:
+                        if key == self.text_content:
+                            result.text = unicode(value)
+                            continue
+                    # Treat scalars as text content, not children (GData)
+                    if self.attr_prefix is None and self.text_content is not None:
+                        if not value_is_dict and not value_is_list:
                             result.set(key, unicode(value))
-                        continue
-                    if self.text_content is not None and key == self.text_content:
-                        result.text = unicode(value)
-                        continue
+                            continue
                 # Add other keys as one or more children
-                values = value if isinstance(value, (self.list, list)) else [value]
+                values = value if value_is_list else [value]
                 for value in values:
                     elem = self.element(key)
                     result.append(elem)
-                    if not isinstance(value, (self.dict, dict)) and self.text_content:
-                        value = {self.text_content: value}
-                    self.etree(value, elem)
+                    # Treat scalars as text content, not children (Parker)
+                    if not isinstance(value, (self.dict, dict, self.list, list)):
+                        if self.text_content:
+                            value = {self.text_content: value}
+                    self.etree(value, root=elem)
         else:
             if self.text_content is None and root is not None:
                 root.text = unicode(data)
@@ -80,7 +93,7 @@ class XMLData(object):
         return result
 
     def data(self, root):
-        'Convert etree into data structure'
+        'Convert etree.Element into a dictionary'
         value = self.dict()
         for attr, attrval in root.attrib.items():
             attr = attr if self.attr_prefix is None else self.attr_prefix + attr
@@ -116,6 +129,7 @@ class Parker(XMLData):
         super(Parker, self).__init__(**kwargs)
 
     def data(self, root):
+        'Convert etree.Element into a dictionary'
         # If no children, just return the text
         children = [node for node in root if isinstance(node.tag, basestring)]
         if len(children) == 0:
