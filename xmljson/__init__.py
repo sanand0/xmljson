@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -49,7 +49,7 @@ class XMLData(object):
     def etree(self, data, root=None):
         'Convert data structure into etree'
         result = self.list() if root is None else root
-        if isinstance(data, dict):
+        if isinstance(data, (self.dict, dict)):
             for key, value in data.items():
                 # Add attributes and text to result (if root)
                 if root is not None:
@@ -65,10 +65,12 @@ class XMLData(object):
                         result.text = unicode(value)
                         continue
                 # Add other keys as one or more children
-                values = value if isinstance(value, list) else [value]
+                values = value if isinstance(value, (self.list, list)) else [value]
                 for value in values:
                     elem = self.element(key)
                     result.append(elem)
+                    if not isinstance(value, (self.dict, dict)) and self.text_content:
+                        value = {self.text_content: value}
                     self.etree(value, elem)
         else:
             if self.text_content is None and root is not None:

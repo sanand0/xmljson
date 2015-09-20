@@ -3,6 +3,16 @@
 History
 -------
 
+0.1.3 (2015-09-20)
+~~~~~~~~~~~~~~~~~
+
+- Simplify ``{'p': {'$': 'text'}}`` to ``{'p': 'text'}`` in BadgerFish and GData
+  conventions.
+- Add test cases for ``.etree()`` -- mainly from the `MDN JXON article`_.
+- ``dict_type``/``list_type`` do not need to inherit from ``dict``/``list``
+
+.. _MDN JXON article: https://developer.mozilla.org/en-US/docs/JXON#In_summary
+
 0.1.2 (2015-09-18)
 ~~~~~~~~~~~~~~~~~~
 

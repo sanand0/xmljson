@@ -77,14 +77,31 @@ class TestBadgerFish(TestXmlJson):
         'BadgerFish conversion from data to etree'
         eq = self.check_etree(converter or xmljson.badgerfish)
 
-        # Dicts
-        eq({})
-        eq({'x': 'a'}, '<x><a/></x>')
-        eq({'x': {'@x': 1}}, '<x x="1"/>')
-        eq(od([
+        # From https://developer.mozilla.org/en-US/docs/JXON#In_summary
+        eq({'animal': {}}, '<animal/>')
+        eq({'animal': 'Deka'}, '<animal>Deka</animal>')
+        eq({'animal': 1}, '<animal>1</animal>')
+        eq({'animal': {'@name': 1}}, '<animal name="1"/>')
+        eq({'animal': {'@name': 'Deka', '$': 'is my cat'}},
+           '<animal name="Deka">is my cat</animal>')
+        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+           '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
+        eq({'animal': {'dog': ['Charlie', 'Mad Max']}},
+           '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
+        eq({'animal': {'$': ' in my house ', 'dog': 'Charlie'}},
+           '<animal> in my house <dog>Charlie</dog></animal>')
+
+        # TODO: handling split text
+        # eq({'animal': {'$': ' in my house', 'dog': 'Charlie'}},
+        #    '<animal> in my <dog>Charlie</dog> house</animal>')
+
+        # Test edge cases
+        eq('x', '<x/>')             # Strings become elements
+        eq({})                      # Empty objects become empty nodes
+        eq(od([                     # Multiple keys become multiple nodes
             ('x', {'@x': 1}),
             ('y', 'z')
-        ]), '<x x="1"/>', '<y><z/></y>')
+        ]), '<x x="1"/>', '<y>z</y>')
 
         # Attributes
         eq({'p': {'@id': 1, '$': 'text'}}, '<p id="1">text</p>')
@@ -159,21 +176,121 @@ class TestBadgerFish(TestXmlJson):
             '<alice charlie="david">bob</alice>')
 
 
+class TestGData(TestXmlJson):
+
+    def test_etree(self):
+        'GData conversion from etree to data'
+        eq = self.check_etree(xmljson.gdata)
+
+        # From https://developer.mozilla.org/en-US/docs/JXON#In_summary
+        eq({'animal': {}}, '<animal/>')
+        eq({'animal': 'Deka'}, '<animal>Deka</animal>')
+        eq({'animal': 1}, '<animal>1</animal>')
+        eq({'animal': {'$t': 'is my cat'}},
+           '<animal>is my cat</animal>')
+        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+           '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
+        eq({'animal': {'dog': ['Charlie', 'Mad Max']}},
+           '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
+        eq({'animal': {'$t': ' in my house ', 'dog': 'Charlie'}},
+           '<animal> in my house <dog>Charlie</dog></animal>')
+
+        # Test edge cases
+        eq('x', '<x/>')             # Strings become elements
+        eq({})                      # Empty objects become empty nodes
+        eq(od([                     # Multiple keys become multiple nodes
+            ('x', {}),
+            ('y', 'z')
+        ]), '<x/>', '<y>z</y>')
+
+        # Attributes
+        eq({'p': {'$t': 'text'}}, '<p>text</p>')
+        eq({'div': {'$t': 'parent-text', 'p': {'$t': 'text'}}},
+            '<div>parent-text<p>text</p></div>')
+
+        # Based on http://www.sklar.com/badgerfish/
+        # Text content of elements goes in the $ property of an object.
+        eq({'alice': {'$t': 'bob'}}, '<alice>bob</alice>')
+
+        # Nested elements become nested properties
+        eq({'alice': od([
+            ('bob', {'$t': 'charlie'}),
+            ('david', {'$t': 'edgar'})])},
+           '<alice><bob>charlie</bob><david>edgar</david></alice>')
+
+        # Multiple elements at the same level become array elements.
+        eq({'alice': {'bob': [{'$t': 'charlie'}]}},
+           '<alice><bob>charlie</bob></alice>')
+        eq({'alice': {'bob': [{'$t': 'charlie'}, {'$t': 'david'}]}},
+           '<alice><bob>charlie</bob><bob>david</bob></alice>')
+
+        # Attributes go in properties whose names begin with @.
+        eq({'alice': {'$t': 'bob'}},
+            '<alice>bob</alice>')
+
+    def test_data(self):
+        'GData conversion from data to etree'
+        eq = self.check_data(xmljson.gdata)
+
+        # Dicts
+        eq('{"x": {"a": {}}}', '<x><a/></x>')
+        eq('{"x": {"y": {"z": {}}}}', '<x><y><z/></y></x>')
+        eq('{"root": {"x": {}, "y": {"z": {}}}}',
+           '<root><x/><y><z/></y></root>')
+
+        # Attributes
+        eq('{"p": {"$t": "text"}}', '<p>text</p>')
+        eq('{"div": {"$t": "parent-text", "p": {"$t": "text"}}}',
+            '<div>parent-text<p>text</p></div>')
+
+        # From http://www.sklar.com/badgerfish/
+        # Text content of elements goes in the $ property of an object.
+        eq('{"alice": {"$t": "bob"}}', '<alice>bob</alice>')
+
+        # Nested elements become nested properties
+        eq('{"alice": {"bob": {"$t": "charlie"}, "david": {"$t": "edgar"}}}',
+           '<alice><bob>charlie</bob><david>edgar</david></alice>')
+
+        # Multiple elements at the same level become array elements.
+        eq('{"alice": {"bob": {"$t": "charlie"}}}',
+           '<alice><bob>charlie</bob></alice>')
+        eq('{"alice": {"bob": [{"$t": "charlie"}, {"$t": "david"}]}}',
+           '<alice><bob>charlie</bob><bob>david</bob></alice>')
+
+        # Comments do not matter
+        eq('{"root": {"version": 1.0, "$t": "testing", "element": {"test": true, "$t": 1}}}',
+           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
+
+    def test_xml_namespace(self):
+        'XML namespaces are not yet implemented'
+        with self.assertRaises(Exception):
+            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
+
+
 class TestParker(TestXmlJson):
 
     def test_etree(self):
         'Parker conversion from data to etree'
         eq = self.check_etree(xmljson.parker)
 
-        # Dicts
-        eq({})
-        eq({'x': 'a'}, '<x>a</x>')
-        with self.assertRaises(Exception):
-            eq({'x': {'@x': 1}}, '<x x="1"/>')
-        eq(od([
+        # From https://developer.mozilla.org/en-US/docs/JXON#In_summary
+        eq({'animal': {}}, '<animal/>')
+        eq({'animal': 'Deka'}, '<animal>Deka</animal>')
+        eq({'animal': 1}, '<animal>1</animal>')
+        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+           '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
+        eq({'animal': {'dog': ['Charlie', 'Mad Max']}},
+           '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
+
+        # Test edge cases
+        eq('x', '<x/>')             # Strings become elements
+        eq({})                      # Empty objects become empty nodes
+        eq(od([                     # Multiple keys become multiple nodes
             ('x', 'a'),
             ('y', 'b')
         ]), '<x>a</x>', '<y>b</y>')
+        with self.assertRaises(Exception):
+            eq({'x': {'@x': 1}}, '<x x="1"/>')
 
         # Nested elements
         eq({'alice': od([
@@ -238,84 +355,3 @@ class TestParker(TestXmlJson):
         # Namespaces get absorbed, and prefixes will just be part of the property name:
         eq('{"{http://zanstra.com/ding}dong": "binnen"}',
            '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
-
-
-class TestGData(TestXmlJson):
-
-    def test_etree(self):
-        'GData conversion from etree to data'
-        eq = self.check_etree(xmljson.gdata)
-
-        # Dicts
-        eq({})
-        eq({'x': 'a'}, '<x><a/></x>')
-        with self.assertRaises(Exception):
-            eq({'x': {'@x': 1}}, '<x x="1"/>')
-        eq({'x': {'y': 'a'}}, '<x><y><a/></y></x>')
-        eq(od([
-            ('x', {}),
-            ('y', 'z')
-        ]), '<x/>', '<y><z/></y>')
-
-        # Attributes
-        eq({'p': {'$t': 'text'}}, '<p>text</p>')
-        eq({'div': {'$t': 'parent-text', 'p': {'$t': 'text'}}},
-            '<div>parent-text<p>text</p></div>')
-
-        # From http://www.sklar.com/badgerfish/
-        # Text content of elements goes in the $ property of an object.
-        eq({'alice': {'$t': 'bob'}}, '<alice>bob</alice>')
-
-        # Nested elements become nested properties
-        eq({'alice': od([
-            ('bob', {'$t': 'charlie'}),
-            ('david', {'$t': 'edgar'})])},
-           '<alice><bob>charlie</bob><david>edgar</david></alice>')
-
-        # Multiple elements at the same level become array elements.
-        eq({'alice': {'bob': [{'$t': 'charlie'}]}},
-           '<alice><bob>charlie</bob></alice>')
-        eq({'alice': {'bob': [{'$t': 'charlie'}, {'$t': 'david'}]}},
-           '<alice><bob>charlie</bob><bob>david</bob></alice>')
-
-        # Attributes go in properties whose names begin with @.
-        eq({'alice': {'$t': 'bob'}},
-            '<alice>bob</alice>')
-
-    def test_data(self):
-        'GData conversion from data to etree'
-        eq = self.check_data(xmljson.gdata)
-
-        # Dicts
-        eq('{"x": {"a": {}}}', '<x><a/></x>')
-        eq('{"x": {"y": {"z": {}}}}', '<x><y><z/></y></x>')
-        eq('{"root": {"x": {}, "y": {"z": {}}}}',
-           '<root><x/><y><z/></y></root>')
-
-        # Attributes
-        eq('{"p": {"$t": "text"}}', '<p>text</p>')
-        eq('{"div": {"$t": "parent-text", "p": {"$t": "text"}}}',
-            '<div>parent-text<p>text</p></div>')
-
-        # From http://www.sklar.com/badgerfish/
-        # Text content of elements goes in the $ property of an object.
-        eq('{"alice": {"$t": "bob"}}', '<alice>bob</alice>')
-
-        # Nested elements become nested properties
-        eq('{"alice": {"bob": {"$t": "charlie"}, "david": {"$t": "edgar"}}}',
-           '<alice><bob>charlie</bob><david>edgar</david></alice>')
-
-        # Multiple elements at the same level become array elements.
-        eq('{"alice": {"bob": {"$t": "charlie"}}}',
-           '<alice><bob>charlie</bob></alice>')
-        eq('{"alice": {"bob": [{"$t": "charlie"}, {"$t": "david"}]}}',
-           '<alice><bob>charlie</bob><bob>david</bob></alice>')
-
-        # Comments do not matter
-        eq('{"root": {"version": 1.0, "$t": "testing", "element": {"test": true, "$t": 1}}}',
-           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
-
-    def test_xml_namespace(self):
-        'XML namespaces are not yet implemented'
-        with self.assertRaises(Exception):
-            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})

@@ -37,11 +37,11 @@ can be converted into this data structure (which also a valid JSON object)::
     ] }
 
 This uses the `BadgerFish`_ convention that prefixes attributes with ``@``.
-Other conventions supported by this library are:
+The conventions supported by this library are:
 
 * `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes,
 * `GData`_: Use ``"$t"`` for text content, ignore attributes
-* `Parker`_: Ignore attributes and text content
+* `Parker`_: Use tail nodes for text content, ignore attributes
 
 .. _BadgerFish: http://www.sklar.com/badgerfish/
 .. _GData: http://wiki.open311.org/JSON_and_XML_Conversion/#the-gdata-convention
@@ -53,7 +53,7 @@ Convert data to XML
 To convert from a data structure to XML using the BadgerFish convention::
 
     >>> from xmljson import badgerfish as bf
-    >>> bf.etree({'p': {'@id': 'main', '$': 'Hello', 'b': {'$': 'bold'}}})
+    >>> bf.etree({'p': {'@id': 'main', '$': 'Hello', 'b': 'bold'}})
 
 This returns an **array** of `etree.Element`_ structures. In this case, the
 result is identical to::
@@ -78,6 +78,12 @@ This includes `lxml.html <http://lxml.de/lxmlhtml.html>`_ as well::
     >>> result = bf.etree({'p': {'@id': 'main'}}, root=root)
     >>> tostring(result, doctype='<!DOCTYPE html>')
     '<!DOCTYPE html>\n<html><p id="main"></p></html>'
+
+For ease of use, strings are treated as node text. For example, both the
+following are the same::
+
+    >>> bf.etree({'p': {'$': 'paragraph text'}})
+    >>> bf.etree({'p': 'paragraph text'})
 
 Convert XML to data
 -------------------
