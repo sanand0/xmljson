@@ -39,13 +39,17 @@ can be converted into this data structure (which also a valid JSON object)::
 This uses the `BadgerFish`_ convention that prefixes attributes with ``@``.
 The conventions supported by this library are:
 
-* `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes,
+* `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes
 * `GData`_: Use ``"$t"`` for text content, attributes added as-is
+* `Yahoo`_ Use ``"content"`` for text content, attributes added as-is
 * `Parker`_: Use tail nodes for text content, ignore attributes
 
 .. _BadgerFish: http://www.sklar.com/badgerfish/
 .. _GData: http://wiki.open311.org/JSON_and_XML_Conversion/#the-gdata-convention
 .. _Parker: https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
+.. _Yahoo: https://developer.yahoo.com/javascript/json.html#xml
+.. _xmlconv: https://github.com/chbrown/xmlconv/tree/master/lib
+
 
 Convert data to XML
 -------------------

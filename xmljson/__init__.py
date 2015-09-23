@@ -99,7 +99,9 @@ class XMLData(object):
             attr = attr if self.attr_prefix is None else self.attr_prefix + attr
             value[attr] = self._convert(attrval)
         if root.text and self.text_content is not None:
-            value[self.text_content] = self._convert(root.text)
+            text = root.text.strip()
+            if text:
+                value[self.text_content] = self._convert(text)
         children = [node for node in root if isinstance(node.tag, basestring)]
         count = Counter(child.tag for child in children)
         for child in children:
@@ -121,6 +123,16 @@ class GData(XMLData):
     'Converts between XML and data using the GData convention'
     def __init__(self, **kwargs):
         super(GData, self).__init__(text_content='$t', **kwargs)
+
+
+class Yahoo(XMLData):
+    'Converts between XML and data using the Yahoo convention'
+    @staticmethod
+    def _convert(value):
+        return value
+
+    def __init__(self, **kwargs):
+        super(Yahoo, self).__init__(text_content='content', **kwargs)
 
 
 class Parker(XMLData):
@@ -149,3 +161,4 @@ class Parker(XMLData):
 badgerfish = BadgerFish()
 gdata = GData()
 parker = Parker()
+yahoo = Yahoo()
