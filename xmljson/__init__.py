@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.4'
+__version__ = '0.1.5'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -19,12 +19,13 @@ if sys.version_info[0] == 3:
 
 class XMLData(object):
     def __init__(self, element=None, dict_type=None, list_type=None,
-                 attr_prefix=None, text_content=None):
+                 attr_prefix=None, text_content=None, simple_text=False):
         self.element = Element if element is None else element
         self.dict = OrderedDict if dict_type is None else dict_type
         self.list = list if list_type is None else list_type
         self.attr_prefix = attr_prefix
         self.text_content = text_content
+        self.simple_text = simple_text
 
     @staticmethod
     def _convert(value):
@@ -95,14 +96,17 @@ class XMLData(object):
     def data(self, root):
         'Convert etree.Element into a dictionary'
         value = self.dict()
+        children = [node for node in root if isinstance(node.tag, basestring)]
         for attr, attrval in root.attrib.items():
             attr = attr if self.attr_prefix is None else self.attr_prefix + attr
             value[attr] = self._convert(attrval)
         if root.text and self.text_content is not None:
             text = root.text.strip()
             if text:
-                value[self.text_content] = self._convert(text)
-        children = [node for node in root if isinstance(node.tag, basestring)]
+                if self.simple_text and len(children) == len(root.attrib) == 0:
+                    value = self._convert(text)
+                else:
+                    value[self.text_content] = self._convert(text)
         count = Counter(child.tag for child in children)
         for child in children:
             if count[child.tag] == 1:
@@ -132,7 +136,7 @@ class Yahoo(XMLData):
         return value
 
     def __init__(self, **kwargs):
-        super(Yahoo, self).__init__(text_content='content', **kwargs)
+        super(Yahoo, self).__init__(text_content='content', simple_text=True, **kwargs)
 
 
 class Parker(XMLData):

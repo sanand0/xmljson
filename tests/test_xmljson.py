@@ -360,3 +360,65 @@ class TestParker(TestXmlJson):
         # Namespaces get absorbed, and prefixes will just be part of the property name:
         eq('{"{http://zanstra.com/ding}dong": "binnen"}',
            '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
+
+
+class TestYahoo(TestXmlJson):
+    result = '''
+        <ResultSet totalResultsAvailable="229307" totalResultsReturned="2">
+        <Result>
+          <Title>Image 116</Title>
+          <FileSize>40000</FileSize>
+          <Thumbnail>
+            <Url>http://example.com/116.jpg</Url>
+            <Height>125</Height>
+            <Width>100</Width>
+          </Thumbnail>
+        </Result>
+        <Result>
+          <Title>Image 118</Title>
+          <FileSize>50000</FileSize>
+          <Thumbnail>
+            <Url>http://example.com/118.jpg</Url>
+            <Height>125</Height>
+            <Width>100</Width>
+          </Thumbnail>
+        </Result>
+        </ResultSet>
+        '''
+
+    data = json.loads('''{
+        "ResultSet": {
+            "totalResultsAvailable": "229307",
+            "totalResultsReturned": "2",
+            "Result": [
+                {
+                    "Title": "Image 116",
+                    "FileSize": "40000",
+                    "Thumbnail": {
+                        "Url": "http://example.com/116.jpg",
+                        "Height": "125",
+                        "Width": "100"
+                    }
+                },
+                {
+                    "Title": "Image 118",
+                    "FileSize": "50000",
+                    "Thumbnail": {
+                        "Url": "http://example.com/118.jpg",
+                        "Height": "125",
+                        "Width": "100"
+                    }
+                }
+            ]
+        }
+    }''', object_pairs_hook=od)
+
+    @unittest.skip('To be written')
+    def test_etree(self):
+        'Yahoo conversion from data to etree'
+        pass
+
+    def test_data(self):
+        'Yahoo conversion from etree to data'
+        eq = self.check_data(xmljson.yahoo)
+        eq(json.dumps(self.data), self.result)

@@ -119,6 +119,7 @@ other classes. Currently, these are supported::
     >>> from xmljson import badgerfish      # == xmljson.BadgerFish()
     >>> from xmljson import gdata           # == xmljson.GData()
     >>> from xmljson import parker          # == xmljson.Parker()
+    >>> from xmljson import yahoo           # == xmljson.Yahoo()
 
 Installation
 ------------
