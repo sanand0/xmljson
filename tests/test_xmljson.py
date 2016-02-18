@@ -170,10 +170,26 @@ class TestBadgerFish(TestXmlJson):
 
     def test_custom_root(self):
         for etree in (xml.etree.cElementTree, lxml.etree, lxml.html):
-            bf = xmljson.BadgerFish(element=etree.Element)
+            conv = xmljson.BadgerFish(element=etree.Element)
             self.assertEqual(
-                decode(etree.tostring(bf.etree({'p': {'$': 1}}, etree.fromstring('<html/>')))),
+                decode(etree.tostring(conv.etree({'p': {'$': 1}}, etree.fromstring('<html/>')))),
                 '<html><p>1</p></html>')
+
+    def test_xml_fromstring(self):
+        'xml_fromstring=False does not convert types'
+        x2j_convert = self.check_data(xmljson.BadgerFish(xml_fromstring=True))
+        x2j_strings = self.check_data(xmljson.BadgerFish(xml_fromstring=str))
+        x2j_convert('{"x": {"$": 1}}', '<x>1</x>')
+        x2j_strings('{"x": {"$": "1"}}', '<x>1</x>')
+        x2j_convert('{"x": {"$": true}}', '<x>true</x>')
+        x2j_strings('{"x": {"$": "true"}}', '<x>true</x>')
+
+        j2x_convert = self.check_etree(xmljson.BadgerFish(xml_tostring=True))
+        j2x_strings = self.check_etree(xmljson.BadgerFish(xml_tostring=str))
+        j2x_convert({"x": {"$": True}}, '<x>true</x>')
+        j2x_strings({"x": {"$": True}}, '<x>True</x>')
+        j2x_convert({"x": {"$": False}}, '<x>false</x>')
+        j2x_strings({"x": {"$": False}}, '<x>False</x>')
 
 
 class TestGData(TestXmlJson):
@@ -269,6 +285,22 @@ class TestGData(TestXmlJson):
         with self.assertRaises(Exception):
             xmljson.gdata.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
 
+    def test_xml_fromstring(self):
+        'xml_fromstring=False does not convert types'
+        x2j_convert = self.check_data(xmljson.GData(xml_fromstring=True))
+        x2j_strings = self.check_data(xmljson.GData(xml_fromstring=str))
+        x2j_convert('{"x": {"$t": 1}}', '<x>1</x>')
+        x2j_strings('{"x": {"$t": "1"}}', '<x>1</x>')
+        x2j_convert('{"x": {"$t": true}}', '<x>true</x>')
+        x2j_strings('{"x": {"$t": "true"}}', '<x>true</x>')
+
+        j2x_convert = self.check_etree(xmljson.GData(xml_tostring=True))
+        j2x_strings = self.check_etree(xmljson.GData(xml_tostring=str))
+        j2x_convert({"x": {"$t": True}}, '<x>true</x>')
+        j2x_strings({"x": {"$t": True}}, '<x>True</x>')
+        j2x_convert({"x": {"$t": False}}, '<x>false</x>')
+        j2x_strings({"x": {"$t": False}}, '<x>False</x>')
+
 
 class TestParker(TestXmlJson):
 
@@ -359,6 +391,22 @@ class TestParker(TestXmlJson):
         eq('{"{http://zanstra.com/ding}dong": "binnen"}',
            '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
 
+    def test_xml_fromstring(self):
+        'xml_fromstring=False does not convert types'
+        x2j_convert = self.check_data(xmljson.Parker(xml_fromstring=True))
+        x2j_strings = self.check_data(xmljson.Parker(xml_fromstring=str))
+        x2j_convert('1', '<root>1</root>')
+        x2j_strings('"1"', '<root>1</root>')
+        x2j_convert('true', '<root>true</root>')
+        x2j_strings('"true"', '<root>true</root>')
+
+        j2x_convert = self.check_etree(xmljson.Parker(xml_tostring=True))
+        j2x_strings = self.check_etree(xmljson.Parker(xml_tostring=str))
+        j2x_convert(True, '<true/>')
+        j2x_strings(True, '<True/>')
+        j2x_convert(False, '<false/>')
+        j2x_strings(False, '<False/>')
+
 
 class TestYahoo(TestXmlJson):
     @unittest.skip('To be written')
@@ -419,3 +467,19 @@ class TestYahoo(TestXmlJson):
         }''', object_pairs_hook=od)
 
         eq(json.dumps(data), result)
+
+    def test_xml_fromstring(self):
+        'xml_fromstring=False does not convert types'
+        x2j_convert = self.check_data(xmljson.Yahoo(xml_fromstring=True))
+        x2j_strings = self.check_data(xmljson.Yahoo(xml_fromstring=str))
+        x2j_convert('{"x": 1}', '<x>1</x>')
+        x2j_strings('{"x": "1"}', '<x>1</x>')
+        x2j_convert('{"x": true}', '<x>true</x>')
+        x2j_strings('{"x": "true"}', '<x>true</x>')
+
+        j2x_convert = self.check_etree(xmljson.Yahoo(xml_tostring=True))
+        j2x_strings = self.check_etree(xmljson.Yahoo(xml_tostring=str))
+        j2x_convert({"x": True}, '<x>true</x>')
+        j2x_strings({"x": True}, '<x>True</x>')
+        j2x_convert({"x": False}, '<x>false</x>')
+        j2x_strings({"x": False}, '<x>False</x>')

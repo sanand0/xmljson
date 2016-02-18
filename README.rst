@@ -70,16 +70,14 @@ result is identical to::
 The result can be inserted into any existing root `etree.Element`_::
 
     >>> from xml.etree.ElementTree import Element, tostring
-    >>> root = Element('root')
-    >>> result = bf.etree({'p': {'@id': 'main'}}, root=root)
+    >>> result = bf.etree({'p': {'@id': 'main'}}, root=Element('root'))
     >>> tostring(result)
     '<root><p id="main"/></root>'
 
 This includes `lxml.html <http://lxml.de/lxmlhtml.html>`_ as well::
 
     >>> from lxml.html import Element, tostring
-    >>> root = Element('html')
-    >>> result = bf.etree({'p': {'@id': 'main'}}, root=root)
+    >>> result = bf.etree({'p': {'@id': 'main'}}, root=Element('html'))
     >>> tostring(result, doctype='<!DOCTYPE html>')
     '<!DOCTYPE html>\n<html><p id="main"></p></html>'
 
@@ -88,6 +86,18 @@ following are the same::
 
     >>> bf.etree({'p': {'$': 'paragraph text'}})
     >>> bf.etree({'p': 'paragraph text'})
+
+By default, non-string values are converted to strings using Python's ``str``,
+except for booleans -- which are converted into ``true`` and ``false`` (lower
+case). Override this behaviour using ``xml_fromstring``::
+
+    >>> tostring(bf.etree({'x': 1.23, 'y': True}, root=Element('root')))
+    '<root><y>true</y><x>1.23</x></root>'
+    >>> from xmljson import BadgerFish              # import the class
+    >>> bf_str = BadgerFish(xml_tostring=str)       # convert using str()
+    >>> tostring(bf_str.etree({'x': 1.23, 'y': True}, root=Element('root')))
+    '<root><y>True</y><x>1.23</x></root>'
+
 
 Convert XML to data
 -------------------
@@ -109,6 +119,18 @@ To preserve the order of attributes and children, specify the ``dict_type`` as
     >>> from collections import OrderedDict
     >>> from xmljson import BadgerFish              # import the class
     >>> bf = BadgerFish(dict_type=OrderedDict)      # pick dict class
+
+By default, values are parsed into boolean, int or float where possible (except
+in the Yahoo method). Override this behaviour using ``xml_fromstring``::
+
+    >>> dumps(bf.data(fromstring('<x>1</x>')))
+    '{"x": {"$": 1}}'
+    >>> bf_str = BadgerFish(xml_fromstring=False)   # Keep XML values as strings
+    >>> dumps(bf_str.data(fromstring('<x>1</x>')))
+    '{"x": {"$": "1"}}'
+    >>> bf_str = BadgerFish(xml_fromstring=repr)    # Custom string parser
+    '{"x": {"$": "\'1\'"}}'
+
 
 Conventions
 -----------

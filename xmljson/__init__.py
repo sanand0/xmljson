@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -18,18 +18,44 @@ if sys.version_info[0] == 3:
 
 
 class XMLData(object):
-    def __init__(self, element=None, dict_type=None, list_type=None,
-                 attr_prefix=None, text_content=None, simple_text=False):
+    def __init__(self, xml_fromstring=True, xml_tostring=True, element=None, dict_type=None,
+                 list_type=None, attr_prefix=None, text_content=None, simple_text=False):
+        # xml_fromstring == False(y) => '1' -> '1'
+        # xml_fromstring == True     => '1' -> 1
+        # xml_fromstring == fn       => '1' -> fn(1)
+        if callable(xml_fromstring):
+            self._fromstring = xml_fromstring
+        elif not xml_fromstring:
+            self._fromstring = lambda v: v
+        # custom conversion function to convert data string to XML string
+        if callable(xml_tostring):
+            self._tostring = xml_tostring
+        # custom etree.Element to use
         self.element = Element if element is None else element
+        # dict constructor (e.g. OrderedDict, defaultdict)
         self.dict = OrderedDict if dict_type is None else dict_type
+        # list constructor (e.g. UserList)
         self.list = list if list_type is None else list_type
+        # Prefix attributes with a string (e.g. '$')
         self.attr_prefix = attr_prefix
+        # Key that stores text content (e.g. '$t')
         self.text_content = text_content
+        # simple_text == False or None or 0 => '<x>a</x>' = {'x': {'a': {}}}
+        # simple_text == True               => '<x>a</x>' = {'x': 'a'}
         self.simple_text = simple_text
 
     @staticmethod
-    def _convert(value):
-        'Convert string value to None, boolean, int or float'
+    def _tostring(value):
+        'Convert value to XML compatible string'
+        if value is True:
+            value = 'true'
+        elif value is False:
+            value = 'false'
+        return unicode(value)
+
+    @staticmethod
+    def _fromstring(value):
+        'Convert XML string value to None, boolean, int or float'
         if not value:
             return None
         std_value = value.strip().lower()
@@ -64,17 +90,17 @@ class XMLData(object):
                             if value_is_dict:
                                 raise ValueError('XML namespaces not yet supported')
                             else:
-                                result.set(key, unicode(value))
+                                result.set(key, self._tostring(value))
                             continue
                     # Handle text content (BadgerFish, GData)
                     if self.text_content is not None:
                         if key == self.text_content:
-                            result.text = unicode(value)
+                            result.text = self._tostring(value)
                             continue
                     # Treat scalars as text content, not children (GData)
                     if self.attr_prefix is None and self.text_content is not None:
                         if not value_is_dict and not value_is_list:
-                            result.set(key, unicode(value))
+                            result.set(key, self._tostring(value))
                             continue
                 # Add other keys as one or more children
                 values = value if value_is_list else [value]
@@ -88,9 +114,9 @@ class XMLData(object):
                     self.etree(value, root=elem)
         else:
             if self.text_content is None and root is not None:
-                root.text = unicode(data)
+                root.text = self._tostring(data)
             else:
-                result.append(self.element(unicode(data)))
+                result.append(self.element(self._tostring(data)))
         return result
 
     def data(self, root):
@@ -99,14 +125,14 @@ class XMLData(object):
         children = [node for node in root if isinstance(node.tag, basestring)]
         for attr, attrval in root.attrib.items():
             attr = attr if self.attr_prefix is None else self.attr_prefix + attr
-            value[attr] = self._convert(attrval)
+            value[attr] = self._fromstring(attrval)
         if root.text and self.text_content is not None:
             text = root.text.strip()
             if text:
                 if self.simple_text and len(children) == len(root.attrib) == 0:
-                    value = self._convert(text)
+                    value = self._fromstring(text)
                 else:
-                    value[self.text_content] = self._convert(text)
+                    value[self.text_content] = self._fromstring(text)
         count = Counter(child.tag for child in children)
         for child in children:
             if count[child.tag] == 1:
@@ -131,11 +157,8 @@ class GData(XMLData):
 
 class Yahoo(XMLData):
     'Converts between XML and data using the Yahoo convention'
-    @staticmethod
-    def _convert(value):
-        return value
-
     def __init__(self, **kwargs):
+        kwargs.setdefault('xml_fromstring', False)
         super(Yahoo, self).__init__(text_content='content', simple_text=True, **kwargs)
 
 
@@ -149,7 +172,7 @@ class Parker(XMLData):
         # If no children, just return the text
         children = [node for node in root if isinstance(node.tag, basestring)]
         if len(children) == 0:
-            return self._convert(root.text)
+            return self._fromstring(root.text)
 
         # Element names become object properties
         count = Counter(child.tag for child in children)

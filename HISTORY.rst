@@ -3,6 +3,13 @@
 History
 -------
 
+0.1.6 (18 Feb 2016)
+~~~~~~~~~~~~~~~~~~~
+
+- Add ``xml_fromstring=`` and ``xml_tostring=`` parameters to constructor to
+  customise string conversion from and to XML.
+
+
 0.1.5 (23 Sep 2015)
 ~~~~~~~~~~~~~~~~~~~
 
