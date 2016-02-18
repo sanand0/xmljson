@@ -162,6 +162,11 @@ class TestBadgerFish(TestXmlJson):
         eq('{"alice": {"@charlie": "david", "$": "bob"}}',
             '<alice charlie="david">bob</alice>')
 
+    def test_xml_namespace(self):
+        'XML namespaces are not yet implemented'
+        with self.assertRaises(ValueError):
+            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
+
     def test_custom_dict(self):
         'Conversion to dict uses OrderedDict'
         eq = self.check_data(xmljson.badgerfish)
@@ -279,11 +284,6 @@ class TestGData(TestXmlJson):
         # Comments do not matter
         eq('{"root": {"version": 1.0, "$t": "testing", "element": {"test": true, "$t": 1}}}',
            '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
-
-    def test_xml_namespace(self):
-        'XML namespaces are not yet implemented'
-        with self.assertRaises(Exception):
-            xmljson.gdata.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
 
     def test_xml_fromstring(self):
         'xml_fromstring=False does not convert types'
