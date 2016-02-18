@@ -57,19 +57,6 @@ class TestXmlJson(unittest.TestCase):
 
         return assertEqual
 
-    def test_custom_dict(self):
-        'Conversion to dict uses OrderedDict'
-        eq = self.check_data(xmljson.badgerfish)
-        eq('{"root": {"a": {}, "x": {}, "b": {}, "y": {}, "c": {}, "z": {}}}',
-           '<root><a/><x/><b/><y/><c/><z/></root>')
-
-    def test_custom_root(self):
-        for etree in (xml.etree.cElementTree, lxml.etree, lxml.html):
-            bf = xmljson.BadgerFish(element=etree.Element)
-            self.assertEqual(
-                decode(etree.tostring(bf.etree({'p': {'$': 1}}, etree.fromstring('<html/>')))),
-                '<html><p>1</p></html>')
-
 
 class TestBadgerFish(TestXmlJson):
 
@@ -175,6 +162,19 @@ class TestBadgerFish(TestXmlJson):
         eq('{"alice": {"@charlie": "david", "$": "bob"}}',
             '<alice charlie="david">bob</alice>')
 
+    def test_custom_dict(self):
+        'Conversion to dict uses OrderedDict'
+        eq = self.check_data(xmljson.badgerfish)
+        eq('{"root": {"a": {}, "x": {}, "b": {}, "y": {}, "c": {}, "z": {}}}',
+           '<root><a/><x/><b/><y/><c/><z/></root>')
+
+    def test_custom_root(self):
+        for etree in (xml.etree.cElementTree, lxml.etree, lxml.html):
+            bf = xmljson.BadgerFish(element=etree.Element)
+            self.assertEqual(
+                decode(etree.tostring(bf.etree({'p': {'$': 1}}, etree.fromstring('<html/>')))),
+                '<html><p>1</p></html>')
+
 
 class TestGData(TestXmlJson):
 
@@ -213,7 +213,6 @@ class TestGData(TestXmlJson):
         eq({'div': {'$t': 'parent-text', 'p': {'$t': 'text'}}},
             '<div>parent-text<p>text</p></div>')
 
-        # Based on http://www.sklar.com/badgerfish/
         # Text content of elements goes in the $ property of an object.
         eq({'alice': {'$t': 'bob'}}, '<alice>bob</alice>')
 
@@ -248,7 +247,6 @@ class TestGData(TestXmlJson):
         eq('{"div": {"$t": "parent-text", "p": {"$t": "text"}}}',
             '<div>parent-text<p>text</p></div>')
 
-        # From http://www.sklar.com/badgerfish/
         # Text content of elements goes in the $ property of an object.
         eq('{"alice": {"$t": "bob"}}', '<alice>bob</alice>')
 
@@ -269,7 +267,7 @@ class TestGData(TestXmlJson):
     def test_xml_namespace(self):
         'XML namespaces are not yet implemented'
         with self.assertRaises(Exception):
-            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
+            xmljson.gdata.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
 
 
 class TestParker(TestXmlJson):
