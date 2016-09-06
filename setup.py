@@ -17,7 +17,7 @@ with open('HISTORY.rst') as history_file:
 setup(
     name='xmljson',
     version=xmljson.__version__,
-    description="xmlsjon converts XML into Python dictionary structures "
+    description="xmljson converts XML into Python dictionary structures "
                 "(trees, like in JSON) and vice-versa.",
     long_description=readme + '\n\n' + history,
     author="S Anand",

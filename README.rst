@@ -9,7 +9,7 @@ xmljson
         :target: https://pypi.python.org/pypi/xmljson
 
 
-xmlsjon converts XML into Python dictionary structures (trees, like in JSON) and vice-versa.
+xmljson converts XML into Python dictionary structures (trees, like in JSON) and vice-versa.
 
 About
 -----
