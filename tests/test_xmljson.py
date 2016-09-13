@@ -12,7 +12,7 @@ import sys
 import json
 import unittest
 
-from collections import OrderedDict as od
+from collections import OrderedDict as Dict
 from lxml.etree import tostring as tostring, fromstring
 from lxml.doctestcompare import LXMLOutputChecker
 import lxml.html
@@ -39,23 +39,23 @@ class TestXmlJson(unittest.TestCase):
         checker = LXMLOutputChecker()
         eq = checker.compare_docs
 
-        def assertEqual(obj, *strings):
+        def compare(obj, *strings):
             tree = conv.etree(obj)
             self.assertEqual(len(tree), len(strings))
             for left, right in zip(tree, strings):
                 if not eq(left, fromstring(right)):
                     raise AssertionError('%s != %s' % (decode(tostring(left)), right))
 
-        return assertEqual
+        return compare
 
     def check_data(self, conv):
         'Returns method(jsonstring, xmlstring) that unparses both and checks'
-        def assertEqual(jsonstring, xmlstring):
-            first = json.loads(jsonstring, object_pairs_hook=od)
+        def compare(jsonstring, xmlstring):
+            first = json.loads(jsonstring, object_pairs_hook=Dict)
             second = conv.data(fromstring(xmlstring))
             self.assertEqual(first, second)
 
-        return assertEqual
+        return compare
 
 
 class TestBadgerFish(TestXmlJson):
@@ -71,7 +71,7 @@ class TestBadgerFish(TestXmlJson):
         eq({'animal': {'@name': 1}}, '<animal name="1"/>')
         eq({'animal': {'@name': 'Deka', '$': 'is my cat'}},
            '<animal name="Deka">is my cat</animal>')
-        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+        eq({'animal': Dict([('dog', 'Charlie'), ('cat', 'Deka')])},
            '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
         eq({'animal': {'dog': ['Charlie', 'Mad Max']}},
            '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
@@ -85,7 +85,7 @@ class TestBadgerFish(TestXmlJson):
         # Test edge cases
         eq('x', '<x/>')             # Strings become elements
         eq({})                      # Empty objects become empty nodes
-        eq(od([                     # Multiple keys become multiple nodes
+        eq(Dict([                   # Multiple keys become multiple nodes
             ('x', {'@x': 1}),
             ('y', 'z')
         ]), '<x x="1"/>', '<y>z</y>')
@@ -100,7 +100,7 @@ class TestBadgerFish(TestXmlJson):
         eq({'alice': {'$': 'bob'}}, '<alice>bob</alice>')
 
         # Nested elements become nested properties
-        eq({'alice': od([
+        eq({'alice': Dict([
             ('bob', {'$': 'charlie'}),
             ('david', {'$': 'edgar'})])},
            '<alice><bob>charlie</bob><david>edgar</david></alice>')
@@ -122,7 +122,7 @@ class TestBadgerFish(TestXmlJson):
 
         eq = self.check_etree(html_converter, tostring=lxml.html.tostring,
                               fromstring=lxml.html.fromstring)
-        eq({'div': od([
+        eq({'div': Dict([
             ('p', {'$': 'paragraph'}),
             ('hr', {}),
             ('ul', {'li': [{'$': '1'}, {'$': '2'}]}),
@@ -210,9 +210,9 @@ class TestGData(TestXmlJson):
         eq({'animal': {'name': 1}}, '<animal name="1"/>')
         eq({'animal': {'$t': 'is my cat'}},
            '<animal>is my cat</animal>')
-        eq({'animal': od([('dog', {'$t': 'Charlie'}), ('cat', {'$t': 'Deka'})])},
+        eq({'animal': Dict([('dog', {'$t': 'Charlie'}), ('cat', {'$t': 'Deka'})])},
            '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
-        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+        eq({'animal': Dict([('dog', 'Charlie'), ('cat', 'Deka')])},
            '<animal dog="Charlie" cat="Deka"/>')
         eq({'animal': {'dog': ['Charlie', 'Mad Max']}},
            '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
@@ -224,7 +224,7 @@ class TestGData(TestXmlJson):
         # Test edge cases
         eq('x', '<x/>')             # Strings become elements
         eq({})                      # Empty objects become empty nodes
-        eq(od([                     # Multiple keys become multiple nodes
+        eq(Dict([                   # Multiple keys become multiple nodes
             ('x', {}),
             ('y', 'z')
         ]), '<x/>', '<y>z</y>')
@@ -238,7 +238,7 @@ class TestGData(TestXmlJson):
         eq({'alice': {'$t': 'bob'}}, '<alice>bob</alice>')
 
         # Nested elements become nested properties
-        eq({'alice': od([
+        eq({'alice': Dict([
             ('bob', {'$t': 'charlie'}),
             ('david', {'$t': 'edgar'})])},
            '<alice><bob>charlie</bob><david>edgar</david></alice>')
@@ -312,7 +312,7 @@ class TestParker(TestXmlJson):
         eq({'animal': {}}, '<animal/>')
         eq({'animal': 'Deka'}, '<animal>Deka</animal>')
         eq({'animal': 1}, '<animal>1</animal>')
-        eq({'animal': od([('dog', 'Charlie'), ('cat', 'Deka')])},
+        eq({'animal': Dict([('dog', 'Charlie'), ('cat', 'Deka')])},
            '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
         eq({'animal': {'dog': ['Charlie', 'Mad Max']}},
            '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
@@ -320,7 +320,7 @@ class TestParker(TestXmlJson):
         # Test edge cases
         eq('x', '<x/>')             # Strings become elements
         eq({})                      # Empty objects become empty nodes
-        eq(od([                     # Multiple keys become multiple nodes
+        eq(Dict([                   # Multiple keys become multiple nodes
             ('x', 'a'),
             ('y', 'b')
         ]), '<x>a</x>', '<y>b</y>')
@@ -328,7 +328,7 @@ class TestParker(TestXmlJson):
             eq({'x': {'@x': 1}}, '<x x="1"/>')
 
         # Nested elements
-        eq({'alice': od([
+        eq({'alice': Dict([
             ('bob', {'charlie': {}}),
             ('david', {'edgar': {}})])},
            '<alice><bob><charlie/></bob><david><edgar/></david></alice>')
@@ -464,7 +464,7 @@ class TestYahoo(TestXmlJson):
                     }
                 ]
             }
-        }''', object_pairs_hook=od)
+        }''', object_pairs_hook=Dict)
 
         eq(json.dumps(data), result)
 

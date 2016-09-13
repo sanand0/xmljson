@@ -51,7 +51,7 @@ class XMLData(object):
             value = 'true'
         elif value is False:
             value = 'false'
-        return unicode(value)
+        return unicode(value)       # noqa: convert to whatever native unicode repr
 
     @staticmethod
     def _fromstring(value):

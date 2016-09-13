@@ -63,7 +63,7 @@ environment:
 
     git clone git@github.com:your_user_id/xmljson.git
 
-3. Install your local copy into a virtualenv. Assuming you have virtualenvwrapper installed, this is how you set up your fork for local development::
+3. Install your local copy into a virtualenv. If you have `virtualenvwrapper <http://virtualenvwrapper.readthedocs.org/en/latest/install.html>`__ installed, this is how you set up your fork for local development::
 
     $ mkvirtualenv xmljson
     $ cd xmljson/
