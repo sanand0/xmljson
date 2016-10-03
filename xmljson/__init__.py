@@ -50,6 +50,7 @@ class XMLData(object):
         try:
             elem = Element("html", nsmap={None: 'test'})
             self.lxml_lib = True
+            self.root_count = 0
         except:
             self.lxml_lib = False
 
@@ -181,12 +182,19 @@ class XMLData(object):
         # form lxml.Element with namespaces if present
         if self.lxml_lib:
             if root.tag.startswith('{'):
-                root.tag = root.tag.split('}')[1]
+                uri, root.tag = root.tag.split('}')
+                uri = uri.lstrip('{')
                 nsmap = root.nsmap
                 value[self.ns_name] = {}
 
+                # pushing namespaces to dic; Filtering namespaces by prefix except root node
                 for key in nsmap.keys():
-                    value[self.ns_name].update({key: nsmap[key]})
+                    if self.root_count == 0:
+                        value[self.ns_name].update({key: nsmap[key]})
+                    else:
+                        if nsmap[key] == uri:
+                            value[self.ns_name].update({key: nsmap[key]})
+                    self.root_count += 1
             else:
                 for attr, attrval in root.attrib.items():
                     attr = attr if self.attr_prefix is None else self.attr_prefix + attr
@@ -224,7 +232,7 @@ class XMLData(object):
 
     @staticmethod
     def _process_ns(cls, element):
-        if element.tag.startswith('}'):
+        if element.tag.startswith('{'):
             if any([True if k.split(':')[0] == 'xmlns' else False for k in element.attrib.keys()]):
                 revers_attr = {v:k for k,v in element.attrib.items()}
 
