@@ -18,7 +18,6 @@ from lxml.doctestcompare import LXMLOutputChecker
 import lxml.html
 import lxml.etree
 import xml.etree.cElementTree
-import xml.etree
 import xmljson
 
 
