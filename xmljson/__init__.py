@@ -49,6 +49,7 @@ class XMLData(object):
         self.ns_name = ns_name
         try:
             elem = Element("html", nsmap={None: 'test'})
+            elem.nsmap
             self.lxml_lib = True
             self.root_count = 0
         except:
@@ -110,12 +111,15 @@ class XMLData(object):
                                         pass
                                 else:
                                     for k in value.keys():
-                                        if k == self.text_content:
-                                            k_default = 'ns0'
-                                            self.ns_counter += 1
-                                            result.set('xmlns:' + k_default, self._tostring(value[k]))
+                                        if len(k) > 0:
+                                            if k == self.text_content:
+                                                k_default = 'ns0'
+                                                self.ns_counter += 1
+                                                result.set('xmlns:' + k_default, self._tostring(value[k]))
+                                            else:
+                                                result.set('xmlns:' + k, self._tostring(value[k]))
                                         else:
-                                            result.set('xmlns:' + k, self._tostring(value[k]))
+                                            result.set('xmlns' + k, self._tostring(value[k]))
                             else:
                                 result.set(key, self._tostring(value))
                             continue
@@ -194,7 +198,7 @@ class XMLData(object):
                     else:
                         if nsmap[key] == uri:
                             value[self.ns_name].update({key: nsmap[key]})
-                    self.root_count += 1
+                self.root_count += 1
             else:
                 for attr, attrval in root.attrib.items():
                     attr = attr if self.attr_prefix is None else self.attr_prefix + attr
@@ -205,8 +209,12 @@ class XMLData(object):
 
                 if self.attr_prefix:
                     if self.ns_name in attr:
-                        prefix = attr.split(':')[1]
-                        value[attr.replace(prefix, '')] = {prefix: self._fromstring(attrval)}
+                        if not attr.endswith(':'):
+                            prefix = attr.split(':')[1]
+                            value[attr.replace(prefix, '')] = {prefix: self._fromstring(attrval)}
+                        else:
+                            prefix = attr.split(':')[1]
+                            value['@xmlns'] = {prefix: self._fromstring(attrval)}
                     else:
                         value[attr] = self._fromstring(attrval)
                 else:
@@ -241,7 +249,10 @@ class XMLData(object):
                 key_prefix = revers_attr[uri.strip('{}')]
                 prefix = key_prefix.split(':')[1]
 
-                element.tag = element.tag.replace(uri, prefix + ':')
+                if len(prefix) > 1:
+                    element.tag = element.tag.replace(uri, prefix + ':')
+                else:
+                    element.tag = element.tag.replace(uri, '')
 
                 # trick to determine if given element is root element
                 try:
@@ -275,9 +286,10 @@ class XMLData(object):
                 if root is None:
                     root = elem
                 if ns_map:
-                    ns_prefix = ns_map[0][0]
-                    ns_uri = ns_map[0][1]
-                    elem.set('xmlns:{}'.format(ns_prefix), ns_uri)
+                    for ns in ns_map:
+                        ns_prefix = ns[0]
+                        ns_uri = ns[1]
+                        elem.set('xmlns:{}'.format(ns_prefix), ns_uri)
         return ElementTree(root).getroot()
 
 

@@ -18,6 +18,7 @@ from lxml.doctestcompare import LXMLOutputChecker
 import lxml.html
 import lxml.etree
 import xml.etree.cElementTree
+import xml.etree
 import xmljson
 
 
@@ -63,6 +64,15 @@ class TestXmlJson(unittest.TestCase):
             root = conv.etree(result)
             t1 = fromstring(xmlstring)
             t2 = root[0]
+            try:
+                t1.nsmap
+            except:
+                ns = {'charlie': "http://some-other-namespace"}
+
+                r1 = t1.find('charlie:joe', ns)
+                r2 = t2.find('charlie:joe', ns)
+                self.assertEqual(r1.tag, r2.tag)
+                return
             self.assertEqual(t1.nsmap, t2.nsmap)
         return compare
 
@@ -174,7 +184,7 @@ class TestBadgerFish(TestXmlJson):
     def test_xml_namespace(self):
         'Checks nsmap attribute of root tag'
         eq = self.check_nsmap(xmljson.badgerfish)
-        eq('<alice xmlns="http://some-namespace" xmlns:charlie="http://some-other-namespace">bob</alice>')
+        eq('<alice xmlns="http://some-namespace" xmlns:charlie="http://some-other-namespace"><charlie:joe>bob</charlie:joe></alice>')
 
     def test_custom_dict(self):
         'Conversion to dict uses OrderedDict'
