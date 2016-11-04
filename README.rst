@@ -131,6 +131,16 @@ in the Yahoo method). Override this behaviour using ``xml_fromstring``::
     >>> bf_str = BadgerFish(xml_fromstring=repr)    # Custom string parser
     '{"x": {"$": "\'1\'"}}'
 
+``xml_fromstring`` can be any custom function that takes a string and returns a
+value. In the example below, only the integer ``1`` is converted to an integer.
+Everything else is retained as a float::
+
+    >>> def convert_only_int(val):
+    ...     return int(val) if val.isdigit() else val
+    >>> bf_int = BadgerFish(xml_fromstring=convert_only_int)
+    >>> dumps(bf_int.data(fromstring('<p><x>1</x><y>2.5</y><z>NaN</z></p>')))
+    '{"p": {"x": {"$": 1}, "y": {"$": "2.5"}, "z": {"$": "NaN"}}}'
+
 
 Conventions
 -----------

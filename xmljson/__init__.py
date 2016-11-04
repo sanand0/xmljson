@@ -46,7 +46,7 @@ class XMLData(object):
 
     @staticmethod
     def _tostring(value):
-        'Convert value to XML compatible string'
+        '''Convert value to XML compatible string'''
         if value is True:
             value = 'true'
         elif value is False:
@@ -55,7 +55,7 @@ class XMLData(object):
 
     @staticmethod
     def _fromstring(value):
-        'Convert XML string value to None, boolean, int or float'
+        '''Convert XML string value to None, boolean, int or float'''
         if not value:
             return None
         std_value = value.strip().lower()
@@ -74,7 +74,7 @@ class XMLData(object):
         return value
 
     def etree(self, data, root=None):
-        'Convert data structure into a list of etree.Element'
+        '''Convert data structure into a list of etree.Element'''
         result = self.list() if root is None else root
         if isinstance(data, (self.dict, dict)):
             for key, value in data.items():
@@ -120,7 +120,7 @@ class XMLData(object):
         return result
 
     def data(self, root):
-        'Convert etree.Element into a dictionary'
+        '''Convert etree.Element into a dictionary'''
         value = self.dict()
         children = [node for node in root if isinstance(node.tag, basestring)]
         for attr, attrval in root.attrib.items():
@@ -144,26 +144,26 @@ class XMLData(object):
 
 
 class BadgerFish(XMLData):
-    'Converts between XML and data using the BadgerFish convention'
+    '''Converts between XML and data using the BadgerFish convention'''
     def __init__(self, **kwargs):
         super(BadgerFish, self).__init__(attr_prefix='@', text_content='$', **kwargs)
 
 
 class GData(XMLData):
-    'Converts between XML and data using the GData convention'
+    '''Converts between XML and data using the GData convention'''
     def __init__(self, **kwargs):
         super(GData, self).__init__(text_content='$t', **kwargs)
 
 
 class Yahoo(XMLData):
-    'Converts between XML and data using the Yahoo convention'
+    '''Converts between XML and data using the Yahoo convention'''
     def __init__(self, **kwargs):
         kwargs.setdefault('xml_fromstring', False)
         super(Yahoo, self).__init__(text_content='content', simple_text=True, **kwargs)
 
 
 class Parker(XMLData):
-    'Converts between XML and data using the Parker convention'
+    '''Converts between XML and data using the Parker convention'''
     def __init__(self, **kwargs):
         super(Parker, self).__init__(**kwargs)
 
