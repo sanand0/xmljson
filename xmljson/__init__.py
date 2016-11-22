@@ -183,7 +183,7 @@ class Parker(XMLData):
             else:
                 result.setdefault(child.tag, self.list()).append(self.data(child))
 
-        return result
+        return self.dict([(root.tag, result)])
 
 badgerfish = BadgerFish()
 gdata = GData()
