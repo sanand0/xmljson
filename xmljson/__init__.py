@@ -215,8 +215,8 @@ class Abdera(XMLData):
             value['children'].append(self.data(child))
         return self.dict([(root.tag, value)])
 
+abdera = Abdera()
 badgerfish = BadgerFish()
 gdata = GData()
 parker = Parker()
 yahoo = Yahoo()
-abdera = Abdera()
