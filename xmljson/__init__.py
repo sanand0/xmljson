@@ -186,7 +186,7 @@ class Parker(XMLData):
         return result
 
 
-    class Abdera(XMLData):
+class Abdera(XMLData):
     '''Converts between XML and data using the Abdera convention'''
     def __init__(self, **kwargs):
         super(Abdera, self).__init__(**kwargs)
