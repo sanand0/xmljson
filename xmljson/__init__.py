@@ -185,7 +185,38 @@ class Parker(XMLData):
 
         return result
 
+
+    class Abdera(XMLData):
+    '''Converts between XML and data using the Abdera convention'''
+    def __init__(self, **kwargs):
+        super(Abdera, self).__init__(**kwargs)
+
+    def data(self, root):
+        '''Convert etree.Element into a dictionary'''
+        value = self.dict(
+            attributes = self.dict()
+        )
+        children = [node for node in root if isinstance(node.tag, basestring)]
+        # Add attributes to specific 'attributes' key (always)
+        for attr, attrval in root.attrib.items():
+            value['attributes'][attr] = self._fromstring(attrval)
+        if root.text and self.text_content is not None:
+            text = root.text.strip()
+            if text:
+                if self.simple_text and len(children) == len(root.attrib) == 0:
+                    value = self._fromstring(text)
+                else:
+                    value[self.text_content] = self._fromstring(text)
+        count = Counter(child.tag for child in children)
+        # Add children to specific 'children' key (if any)
+        if len(children) > 0:
+            value['children'] = self.list()
+        for child in children:
+            value['children'].append(self.data(child))
+        return self.dict([(root.tag, value)])
+
 badgerfish = BadgerFish()
 gdata = GData()
 parker = Parker()
 yahoo = Yahoo()
+abdera = Abdera()
