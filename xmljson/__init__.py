@@ -198,9 +198,9 @@ class Abdera(XMLData):
 
         # Add attributes specific 'attributes' key
         if root.attrib:
-            value['attributes'] = self.dict()
+            value[u'attributes'] = self.dict()
             for attr, attrval in root.attrib.items():
-                value['attributes'][attr] = self._fromstring(attrval)
+                value[u'attributes'][unicode(attr)] = self._fromstring(attrval)
 
         # Add children to specific 'children' key
         children_list = self.list()
@@ -230,9 +230,9 @@ class Abdera(XMLData):
             value = children_list[0]
 
         elif len(children_list) > 0:
-            value['children'] = children_list
+            value[u'children'] = children_list
 
-        return self.dict([(root.tag, value)])
+        return self.dict([(unicode(root.tag), value)])
 
 
 # The difference between Cobra and Abdera is that Cobra _always_ has 'attributes' keys,
@@ -241,7 +241,7 @@ class Abdera(XMLData):
 class Cobra(XMLData):
     '''Converts between XML and data using the Cobra convention'''
     def __init__(self, **kwargs):
-        super(Cobra, self).__init__(simple_text=True, text_content=True, **kwargs)
+        super(Cobra, self).__init__(simple_text=True, text_content=True, xml_fromstring=False, **kwargs)
 
     def data(self, root):
         '''Convert etree.Element into a dictionary'''
@@ -249,10 +249,10 @@ class Cobra(XMLData):
         value = self.dict()
 
         # Add attributes to 'attributes' key (sorted!) even when empty
-        value['attributes'] = self.dict()
+        value[u'attributes'] = self.dict()
         if root.attrib:
             for attr in sorted(root.attrib):
-                value['attributes'][attr] = root.attrib[attr]
+                value[u'attributes'][unicode(attr)] = root.attrib[attr]
 
         # Add children to specific 'children' key
         children_list = self.list()
@@ -263,9 +263,9 @@ class Cobra(XMLData):
             text = root.text.strip()
             if text:
                 if self.simple_text and len(children) == len(root.attrib) == 0:
-                    value = text
+                    value = self._fromstring(text)
                 else:
-                    children_list = [ text, ]
+                    children_list = [ self._fromstring(text), ]
 
         count = Counter(child.tag for child in children)
         for child in children:
@@ -278,9 +278,9 @@ class Cobra(XMLData):
                 children_list.append(self.data(child))
 
         if len(children_list) > 0:
-            value['children'] = children_list
+            value[u'children'] = children_list
 
-        return self.dict([(root.tag, value)])
+        return self.dict([(unicode(root.tag), value)])
 
 
 abdera = Abdera()
