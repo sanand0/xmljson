@@ -528,7 +528,7 @@ class TestAbdera(TestXmlJson):
         eq('{"alice": {"children": [{"bob": "charlie"}, {"bob": "david"}]}}',
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
 
-        # Attributes go in properties whose names begin with @.
+        # Attributes go in specific "attributes" dictionary
         eq('{"alice": {"attributes": {"charlie": "david"}, "children": ["bob"]}}',
             '<alice charlie="david">bob</alice>')
 
@@ -576,6 +576,6 @@ class TestCobra(TestXmlJson):
         eq('{"alice": {"attributes": {}, "children": [{"bob": "charlie"}, {"bob": "david"}]}}',
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
 
-        # Attributes go in properties whose names begin with @.
+        # Attributes go in specific "attributes" dictionary
         eq('{"alice": {"attributes": {"charlie": "david"}, "children": ["bob"]}}',
             '<alice charlie="david">bob</alice>')
