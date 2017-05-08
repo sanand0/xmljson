@@ -549,8 +549,10 @@ class TestCobra(TestXmlJson):
         eq = self.check_data(xmljson.cobra)
 
         # Dicts
-        eq('{"x": {"attributes": {}, "children": [{"a": { "attributes": {}}}]}}', '<x><a/></x>')
-        eq('{"x": {"attributes": {"x": "1"}}}', '<x x="1"/>')
+        eq('{"x": {"attributes": {}, "children": [{"a": {"attributes": {}}}]}}',
+           '<x><a/></x>')
+        eq('{"x": {"attributes": {"x": "1"}}}',
+           '<x x="1"/>')
         eq('{"root": {"attributes": {}, "children": [{"x": {"attributes": {"x": "1"}}}, {"y": {"attributes": {}, "children": [{"z": {"attributes": {}}}]}}]}}',
            '<root><x x="1"/><y><z/></y></root>')
 
