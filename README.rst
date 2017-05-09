@@ -41,10 +41,10 @@ The conventions supported by this library are:
 
 * `Abdera`_: Use ``"attributes"`` for attributes, ``"children"`` for nodes
 * `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes
-* `Cobra`_: Use ``"attributes"`` for attributes (even when empty), ``"children"`` for nodes, values are strings
+* `Cobra`_: Use ``"attributes"`` for sorted attributes (even when empty), ``"children"`` for nodes, values are strings
 * `GData`_: Use ``"$t"`` for text content, attributes added as-is
-* `Yahoo`_ Use ``"content"`` for text content, attributes added as-is
 * `Parker`_: Use tail nodes for text content, ignore attributes
+* `Yahoo`_ Use ``"content"`` for text content, attributes added as-is
 
 .. _Abdera: http://wiki.open311.org/JSON_and_XML_Conversion/#the-abdera-convention
 .. _BadgerFish: http://www.sklar.com/badgerfish/
@@ -52,7 +52,6 @@ The conventions supported by this library are:
 .. _GData: http://wiki.open311.org/JSON_and_XML_Conversion/#the-gdata-convention
 .. _Parker: https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
 .. _Yahoo: https://developer.yahoo.com/javascript/json.html#xml
-.. _xmlconv: https://github.com/chbrown/xmlconv/tree/master/lib
 
 
 Convert data to XML
