@@ -167,8 +167,15 @@ class Parker(XMLData):
     def __init__(self, **kwargs):
         super(Parker, self).__init__(**kwargs)
 
-    def data(self, root):
+    def data(self, root, preserve_root=False):
         'Convert etree.Element into a dictionary'
+        # If preserve_root is False, return the root element. This is easiest
+        # done by wrapping the XML in a dummy root element that will be ignored.
+        if preserve_root:
+            new_root = root.makeelement('dummy_root', {})
+            new_root.insert(0, root)
+            root = new_root
+
         # If no children, just return the text
         children = [node for node in root if isinstance(node.tag, basestring)]
         if len(children) == 0:

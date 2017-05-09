@@ -159,6 +159,24 @@ other classes. Currently, these are supported::
     >>> from xmljson import parker          # == xmljson.Parker()
     >>> from xmljson import yahoo           # == xmljson.Yahoo()
 
+
+Options
+-------
+
+Conventions may support additional options.
+
+The `Parker`_ convention absorbs the root element by default.
+``parker.data(preserve_root=True)`` preserves the root instance::
+
+    >>> from xmljson import parker, Parker
+    >>> from xml.etree.ElementTree import fromstring
+    >>> from json import dumps
+    >>> dumps(parker.data(fromstring('<x><a>1</a><b>2</b></x>')))
+    '{"a": 1, "b": 2}'
+    >>> dumps(parker.data(fromstring('<x><a>1</a><b>2</b></x>'), preserve_root=True))
+    '{"x": {"a": 1, "b": 2}}'
+
+
 Installation
 ------------
 
