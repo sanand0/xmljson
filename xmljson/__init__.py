@@ -164,12 +164,18 @@ class Yahoo(XMLData):
 
 class Parker(XMLData):
     '''Converts between XML and data using the Parker convention'''
-    def __init__(self, absorb_root=True, **kwargs):
+    def __init__(self, **kwargs):
         super(Parker, self).__init__(**kwargs)
-        self.absorb_root = absorb_root
 
-    def data(self, root):
+    def data(self, root, preserve_root=False):
         'Convert etree.Element into a dictionary'
+        # If preserve_root is False, return the root element. This is easiest
+        # done by wrapping the XML in a dummy root element that will be ignored.
+        if preserve_root:
+            new_root = root.makeelement('dummy_root', {})
+            new_root.insert(0, root)
+            root = new_root
+
         # If no children, just return the text
         children = [node for node in root if isinstance(node.tag, basestring)]
         if len(children) == 0:
@@ -184,10 +190,7 @@ class Parker(XMLData):
             else:
                 result.setdefault(child.tag, self.list()).append(self.data(child))
 
-        if self.absorb_root:
-            return result
-        else:
-            return self.dict([(root.tag, value)])
+        return result
 
 
 badgerfish = BadgerFish()

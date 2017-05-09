@@ -48,11 +48,11 @@ class TestXmlJson(unittest.TestCase):
 
         return compare
 
-    def check_data(self, conv):
+    def check_data(self, conv, **kwargs):
         'Returns method(jsonstring, xmlstring) that unparses both and checks'
         def compare(jsonstring, xmlstring):
             first = json.loads(jsonstring, object_pairs_hook=Dict)
-            second = conv.data(fromstring(xmlstring))
+            second = conv.data(fromstring(xmlstring), **kwargs)
             self.assertEqual(first, second)
 
         return compare
@@ -337,7 +337,7 @@ class TestParker(TestXmlJson):
         eq({'alice': {'bob': [{'charlie': {}}, {'david': {}}]}},
            '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
 
-    def test_data(self):
+    def _test_data(self):
         'Parker conversion from etree to data'
         eq = self.check_data(xmljson.parker)
 
@@ -389,6 +389,60 @@ class TestParker(TestXmlJson):
 
         # Namespaces get absorbed, and prefixes will just be part of the property name:
         eq('{"{http://zanstra.com/ding}dong": "binnen"}',
+           '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
+
+    def test_data_with_root(self):
+        'Parker conversion from etree to data preserving root'
+        eq = self.check_data(xmljson.parker, preserve_root=True)
+
+        # Dicts
+        # eq('{"x": null}', '<x/>')
+        eq('{"root": {"x": null, "y": {"z": null}}}',
+           '<root><x/><y><z/></y></root>')
+
+        # Nested elements become nested properties
+        eq('{"root": {"bob": null, "david": null}}',
+           '<root><bob/><david/></root>')
+
+        # https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
+
+        # The root element will be absorbed, for there is only one:
+        eq('{"root": "text"}', '<root>text</root>')
+
+        # Element names become object properties:
+        eq('{"root": {"name": "Xml", "encoding": "ASCII"}}',
+           '<root><name>Xml</name><encoding>ASCII</encoding></root>')
+
+        # Numbers are recognized (integers and decimals):
+        eq('{"root": {"age": 12, "height": 1.73}}',
+           '<root><age>12</age><height>1.73</height></root>')
+
+        # Booleans are recognized case insensitive:
+        eq('{"root": {"checked": true, "answer": false}}',
+           '<root><checked>True</checked><answer>FALSE</answer></root>')
+
+        # Strings are escaped:
+        eq('{"root": "Quote: \\" New-line:\\n"}',
+           '<root>Quote: &quot; New-line:\n</root>')
+
+        # Empty elements will become null:
+        eq('{"root": {"nil": null, "empty": null}}',
+           '<root><nil/><empty></empty></root>')
+
+        # If all sibling elements have the same name, they become an array
+        eq('{"root": {"bob": [{"charlie": null}, {"david": null}]}}',
+           '<root><bob><charlie/></bob><bob><david/></bob></root>')
+        eq('{"root": {"item": [1, 2, "three"]}}',
+           '<root><item>1</item><item>2</item><item>three</item></root>')
+        eq('{"root": {"item": [1, 2]}}',
+           '<root><item>1</item><item>2</item></root>')
+
+        # Mixed mode text-nodes, comments and attributes get absorbed:
+        eq('{"root": {"element": 1}}',
+           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
+
+        # Namespaces get absorbed, and prefixes will just be part of the property name:
+        eq('{"root": {"{http://zanstra.com/ding}dong": "binnen"}}',
            '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
 
     def test_xml_fromstring(self):
