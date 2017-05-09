@@ -164,8 +164,9 @@ class Yahoo(XMLData):
 
 class Parker(XMLData):
     '''Converts between XML and data using the Parker convention'''
-    def __init__(self, **kwargs):
+    def __init__(self, absorb_root=True, **kwargs):
         super(Parker, self).__init__(**kwargs)
+        self.absorb_root = absorb_root
 
     def data(self, root):
         'Convert etree.Element into a dictionary'
@@ -183,7 +184,11 @@ class Parker(XMLData):
             else:
                 result.setdefault(child.tag, self.list()).append(self.data(child))
 
-        return result
+        if self.absorb_root:
+            return result
+        else:
+            return self.dict([(root.tag, value)])
+
 
 badgerfish = BadgerFish()
 gdata = GData()
