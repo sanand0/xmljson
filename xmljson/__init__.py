@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.7'
+__version__ = '0.1.8'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -220,12 +220,14 @@ class Abdera(XMLData):
                 if self.simple_text and len(children) == len(root.attrib) == 0:
                     value = self._fromstring(text)
                 else:
-                    children_list = [ self._fromstring(text), ]
+                    children_list = [self._fromstring(text), ]
 
         count = Counter(child.tag for child in children)
         for child in children:
             child_data = self.data(child)
-            if count[child.tag] == 1 and len(children_list) > 1 and isinstance(children_list[-1], types.DictType):
+            if (count[child.tag] == 1
+                    and len(children_list) > 1
+                    and isinstance(children_list[-1], dict)):
                 # Merge keys to existing dictionary
                 children_list[-1].update(child_data)
             else:
@@ -248,7 +250,8 @@ class Abdera(XMLData):
 class Cobra(XMLData):
     '''Converts between XML and data using the Cobra convention'''
     def __init__(self, **kwargs):
-        super(Cobra, self).__init__(simple_text=True, text_content=True, xml_fromstring=False, **kwargs)
+        super(Cobra, self).__init__(simple_text=True, text_content=True,
+                                    xml_fromstring=False, **kwargs)
 
     def data(self, root):
         '''Convert etree.Element into a dictionary'''
@@ -272,12 +275,14 @@ class Cobra(XMLData):
                 if self.simple_text and len(children) == len(root.attrib) == 0:
                     value = self._fromstring(text)
                 else:
-                    children_list = [ self._fromstring(text), ]
+                    children_list = [self._fromstring(text), ]
 
         count = Counter(child.tag for child in children)
         for child in children:
             child_data = self.data(child)
-            if count[child.tag] == 1 and len(children_list) > 1 and isinstance(children_list[-1], types.DictType):
+            if (count[child.tag] == 1
+                    and len(children_list) > 1
+                    and isinstance(children_list[-1], dict)):
                 # Merge keys to existing dictionary
                 children_list[-1].update(child_data)
             else:

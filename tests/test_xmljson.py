@@ -555,7 +555,7 @@ class TestAbdera(TestXmlJson):
         eq = self.check_data(xmljson.abdera)
 
         # Dicts
-        eq('{"x": {"a": {}}}', 
+        eq('{"x": {"a": {}}}',
            '<x><a/></x>')
         eq('{"x": {"attributes": {"x": 1}}}',
            '<x x="1"/>')
@@ -607,7 +607,8 @@ class TestCobra(TestXmlJson):
            '<x><a/></x>')
         eq('{"x": {"attributes": {"x": "1"}}}',
            '<x x="1"/>')
-        eq('{"root": {"attributes": {}, "children": [{"x": {"attributes": {"x": "1"}}}, {"y": {"attributes": {}, "children": [{"z": {"attributes": {}}}]}}]}}',
+        eq('{"root": {"attributes": {}, "children": [{"x": {"attributes": {"x": "1"}}},'
+            + ' {"y": {"attributes": {}, "children": [{"z": {"attributes": {}}}]}}]}}',
            '<root><x x="1"/><y><z/></y></root>')
 
         # Attributes

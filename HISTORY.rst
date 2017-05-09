@@ -3,6 +3,18 @@
 History
 -------
 
+0.1.8 (9 May 2017)
+~~~~~~~~~~~~~~~~~~
+
+- Add Abdera_ and Cobra_ conventions
+- Add ``Parker.data(preserve_root=True)`` option to preserve root element in
+  Parker convention.
+
+Thanks to @dagwieers
+
+.. _Abdera: http://wiki.open311.org/JSON_and_XML_Conversion/#the-abdera-convention
+.. _Cobra: http://wiki.open311.org/JSON_and_XML_Conversion/#the-cobra-convention
+
 0.1.6 (18 Feb 2016)
 ~~~~~~~~~~~~~~~~~~~
 
