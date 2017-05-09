@@ -537,3 +537,99 @@ class TestYahoo(TestXmlJson):
         j2x_strings({"x": True}, '<x>True</x>')
         j2x_convert({"x": False}, '<x>false</x>')
         j2x_strings({"x": False}, '<x>False</x>')
+
+
+class TestAbdera(TestXmlJson):
+    @unittest.skip('To be written')
+    def test_etree(self, converter=None):
+        'Abdera conversion from data to etree'
+        pass
+
+    @unittest.skip('To be written')
+    def test_html(self):
+        'Abdera conversion from data to HTML'
+        pass
+
+    def test_data(self):
+        'Abdera conversion from etree to data'
+        eq = self.check_data(xmljson.abdera)
+
+        # Dicts
+        eq('{"x": {"a": {}}}', 
+           '<x><a/></x>')
+        eq('{"x": {"attributes": {"x": 1}}}',
+           '<x x="1"/>')
+        eq('{"root": {"children": [{"x": {"attributes": {"x": 1}}}, {"y": {"z": {}}}]}}',
+           '<root><x x="1"/><y><z/></y></root>')
+
+        # Attributes
+        eq('{"p": {"attributes": {"id": 1}, "children": ["text"]}}',
+           '<p id="1">text</p>')
+        eq('{"div": {"attributes": {"id": 2}, "children": ["parent-text", {"p": "text"}]}}',
+           '<div id="2">parent-text<p>text</p></div>')
+
+        # Text content of elements
+        eq('{"alice": "bob"}',
+           '<alice>bob</alice>')
+
+        # Nested elements become nested properties
+        eq('{"alice": {"children": [{"bob": "charlie"}, {"david": "edgar"}]}}',
+           '<alice><bob>charlie</bob><david>edgar</david></alice>')
+
+        # Multiple elements at the same level become array elements.
+        eq('{"alice": {"bob": "charlie"}}',
+           '<alice><bob>charlie</bob></alice>')
+        eq('{"alice": {"children": [{"bob": "charlie"}, {"bob": "david"}]}}',
+           '<alice><bob>charlie</bob><bob>david</bob></alice>')
+
+        # Attributes go in specific "attributes" dictionary
+        eq('{"alice": {"attributes": {"charlie": "david"}, "children": ["bob"]}}',
+            '<alice charlie="david">bob</alice>')
+
+
+class TestCobra(TestXmlJson):
+    @unittest.skip('To be written')
+    def test_etree(self, converter=None):
+        'Cobra conversion from data to etree'
+        pass
+
+    @unittest.skip('To be written')
+    def test_html(self):
+        'Cobra conversion from data to HTML'
+        pass
+
+    def test_data(self):
+        'Cobra conversion from etree to data'
+        eq = self.check_data(xmljson.cobra)
+
+        # Dicts
+        eq('{"x": {"attributes": {}, "children": [{"a": {"attributes": {}}}]}}',
+           '<x><a/></x>')
+        eq('{"x": {"attributes": {"x": "1"}}}',
+           '<x x="1"/>')
+        eq('{"root": {"attributes": {}, "children": [{"x": {"attributes": {"x": "1"}}}, {"y": {"attributes": {}, "children": [{"z": {"attributes": {}}}]}}]}}',
+           '<root><x x="1"/><y><z/></y></root>')
+
+        # Attributes
+        eq('{"p": {"attributes": {"id": "1"}, "children": ["text"]}}',
+           '<p id="1">text</p>')
+        eq('{"div": {"attributes": {"id": "2"}, "children": ["parent-text", {"p": "text"}]}}',
+           '<div id="2">parent-text<p>text</p></div>')
+
+        # Text content of elements
+        eq('{"alice": "bob"}',
+           '<alice>bob</alice>')
+
+        # Nested elements become nested properties
+        eq('{"alice": {"attributes": {}, "children": [{"bob": "charlie"}, {"david": "edgar"}]}}',
+           '<alice><bob>charlie</bob><david>edgar</david></alice>')
+
+        # Multiple elements at the same level become array elements.
+        eq('{"alice": {"attributes": {}, "children": [{"bob": "charlie"}]}}',
+           '<alice><bob>charlie</bob></alice>')
+        eq('{"alice": {"attributes": {}, "children": [{"bob": "charlie"}, {"bob": "david"}]}}',
+           '<alice><bob>charlie</bob><bob>david</bob></alice>')
+
+        # Attributes go in specific "attributes" dictionary
+        eq('{"alice": {"attributes": {"charlie": "david"}, "children": ["bob"]}}',
+            '<alice charlie="david">bob</alice>')

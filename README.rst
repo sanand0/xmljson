@@ -39,12 +39,16 @@ can be converted into this data structure (which also a valid JSON object)::
 This uses the `BadgerFish`_ convention that prefixes attributes with ``@``.
 The conventions supported by this library are:
 
+* `Abdera`_: Use ``"attributes"`` for attributes, ``"children"`` for nodes
 * `BadgerFish`_: Use ``"$"`` for text content, ``@`` to prefix attributes
+* `Cobra`_: Use ``"attributes"`` for attributes (even when empty), ``"children"`` for nodes, values are strings
 * `GData`_: Use ``"$t"`` for text content, attributes added as-is
 * `Yahoo`_ Use ``"content"`` for text content, attributes added as-is
 * `Parker`_: Use tail nodes for text content, ignore attributes
 
+.. _Abdera: http://wiki.open311.org/JSON_and_XML_Conversion/#the-abdera-convention
 .. _BadgerFish: http://www.sklar.com/badgerfish/
+.. _Cobra: http://wiki.open311.org/JSON_and_XML_Conversion/#the-cobra-convention
 .. _GData: http://wiki.open311.org/JSON_and_XML_Conversion/#the-gdata-convention
 .. _Parker: https://developer.mozilla.org/en-US/docs/JXON#The_Parker_Convention
 .. _Yahoo: https://developer.yahoo.com/javascript/json.html#xml
@@ -148,7 +152,9 @@ Conventions
 To use a different conversion method, replace ``BadgerFish`` with one of the
 other classes. Currently, these are supported::
 
+    >>> from xmljson import abdera          # == xmljson.Abdera()
     >>> from xmljson import badgerfish      # == xmljson.BadgerFish()
+    >>> from xmljson import cobra           # == xmljson.Cobra()
     >>> from xmljson import gdata           # == xmljson.GData()
     >>> from xmljson import parker          # == xmljson.Parker()
     >>> from xmljson import yahoo           # == xmljson.Yahoo()

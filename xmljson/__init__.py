@@ -193,7 +193,106 @@ class Parker(XMLData):
         return result
 
 
+class Abdera(XMLData):
+    '''Converts between XML and data using the Abdera convention'''
+    def __init__(self, **kwargs):
+        super(Abdera, self).__init__(simple_text=True, text_content=True, **kwargs)
+
+    def data(self, root):
+        '''Convert etree.Element into a dictionary'''
+
+        value = self.dict()
+
+        # Add attributes specific 'attributes' key
+        if root.attrib:
+            value[u'attributes'] = self.dict()
+            for attr, attrval in root.attrib.items():
+                value[u'attributes'][unicode(attr)] = self._fromstring(attrval)
+
+        # Add children to specific 'children' key
+        children_list = self.list()
+        children = [node for node in root if isinstance(node.tag, basestring)]
+
+        # Add root text
+        if root.text and self.text_content is not None:
+            text = root.text.strip()
+            if text:
+                if self.simple_text and len(children) == len(root.attrib) == 0:
+                    value = self._fromstring(text)
+                else:
+                    children_list = [ self._fromstring(text), ]
+
+        count = Counter(child.tag for child in children)
+        for child in children:
+            child_data = self.data(child)
+            if count[child.tag] == 1 and len(children_list) > 1 and isinstance(children_list[-1], types.DictType):
+                # Merge keys to existing dictionary
+                children_list[-1].update(child_data)
+            else:
+                # Add additional text
+                children_list.append(self.data(child))
+
+        # Flatten children
+        if len(root.attrib) == 0 and len(children_list) == 1:
+            value = children_list[0]
+
+        elif len(children_list) > 0:
+            value[u'children'] = children_list
+
+        return self.dict([(unicode(root.tag), value)])
+
+
+# The difference between Cobra and Abdera is that Cobra _always_ has 'attributes' keys,
+# 'children' key is remove when only one child and everything is a string.
+# https://github.com/datacenter/cobra/blob/master/cobra/internal/codec/jsoncodec.py
+class Cobra(XMLData):
+    '''Converts between XML and data using the Cobra convention'''
+    def __init__(self, **kwargs):
+        super(Cobra, self).__init__(simple_text=True, text_content=True, xml_fromstring=False, **kwargs)
+
+    def data(self, root):
+        '''Convert etree.Element into a dictionary'''
+
+        value = self.dict()
+
+        # Add attributes to 'attributes' key (sorted!) even when empty
+        value[u'attributes'] = self.dict()
+        if root.attrib:
+            for attr in sorted(root.attrib):
+                value[u'attributes'][unicode(attr)] = root.attrib[attr]
+
+        # Add children to specific 'children' key
+        children_list = self.list()
+        children = [node for node in root if isinstance(node.tag, basestring)]
+
+        # Add root text
+        if root.text and self.text_content is not None:
+            text = root.text.strip()
+            if text:
+                if self.simple_text and len(children) == len(root.attrib) == 0:
+                    value = self._fromstring(text)
+                else:
+                    children_list = [ self._fromstring(text), ]
+
+        count = Counter(child.tag for child in children)
+        for child in children:
+            child_data = self.data(child)
+            if count[child.tag] == 1 and len(children_list) > 1 and isinstance(children_list[-1], types.DictType):
+                # Merge keys to existing dictionary
+                children_list[-1].update(child_data)
+            else:
+                # Add additional text
+                children_list.append(self.data(child))
+
+        if len(children_list) > 0:
+            value[u'children'] = children_list
+
+        return self.dict([(unicode(root.tag), value)])
+
+
+abdera = Abdera()
 badgerfish = BadgerFish()
+cobra = Cobra()
 gdata = GData()
 parker = Parker()
 yahoo = Yahoo()
