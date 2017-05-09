@@ -27,14 +27,21 @@ XML can be converted to a data structure (such as JSON) and back. For example::
 
 can be converted into this data structure (which also a valid JSON object)::
 
-    { "employees": [
-        { "person": {
-            "name": {"@value": "Alice"}
-        } },
-        { "person": {
-            "name": {"@value": "Alice"}
-        } }
-    ] }
+    {
+        "employees": [{
+            "person": {
+                "name": {
+                    "@value": "Alice"
+                }
+            }
+        }, {
+            "person": {
+                "name": {
+                    "@value": "Bob"
+                }
+            }
+        }]
+    }
 
 This uses the `BadgerFish`_ convention that prefixes attributes with ``@``.
 The conventions supported by this library are:
