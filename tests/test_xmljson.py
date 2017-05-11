@@ -13,12 +13,13 @@ import json
 import unittest
 
 from collections import OrderedDict as Dict
-from lxml.etree import tostring as tostring, fromstring
+from lxml.etree import tostring as tostring, fromstring, ElementTree
 from lxml.doctestcompare import LXMLOutputChecker
 import lxml.html
 import lxml.etree
 import xml.etree.cElementTree
 import xmljson
+
 
 # For Python 3, decode byte strings as UTF-8
 if sys.version_info[0] == 3:
@@ -54,7 +55,24 @@ class TestXmlJson(unittest.TestCase):
             first = json.loads(jsonstring, object_pairs_hook=Dict)
             second = conv.data(fromstring(xmlstring), **kwargs)
             self.assertEqual(first, second)
+        return compare
 
+    def check_nsmap(self, conv):
+        def compare(xmlstring):
+            result = conv.data(fromstring(xmlstring))
+            root = conv.etree(result)
+            t1 = fromstring(xmlstring)
+            t2 = root[0]
+            try:
+                t1.nsmap
+            except:
+                ns = {'charlie': "http://some-other-namespace"}
+
+                r1 = t1.find('charlie:joe', ns)
+                r2 = t2.find('charlie:joe', ns)
+                self.assertEqual(r1.tag, r2.tag)
+                return
+            self.assertEqual(t1.nsmap, t2.nsmap)
         return compare
 
 
@@ -163,9 +181,9 @@ class TestBadgerFish(TestXmlJson):
             '<alice charlie="david">bob</alice>')
 
     def test_xml_namespace(self):
-        'XML namespaces are not yet implemented'
-        with self.assertRaises(ValueError):
-            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
+        'Checks nsmap attribute of root tag'
+        eq = self.check_nsmap(xmljson.badgerfish)
+        eq('<alice xmlns="http://some-namespace" xmlns:charlie="http://some-other-namespace"><charlie:joe>bob</charlie:joe></alice>')
 
     def test_custom_dict(self):
         'Conversion to dict uses OrderedDict'
