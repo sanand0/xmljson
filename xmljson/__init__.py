@@ -88,8 +88,7 @@ class XMLData(object):
                             key = key.lstrip(self.attr_prefix)
                             # @xmlns: {$: xxx, svg: yyy} becomes xmlns="xxx" xmlns:svg="yyy"
                             if value_is_dict:
-                                raise ValueError(
-                                    'XML namespaces not yet supported')
+                                raise ValueError('XML namespaces not yet supported')
                             else:
                                 result.set(key, self._tostring(value))
                             continue
@@ -146,39 +145,32 @@ class XMLData(object):
 
 class BadgerFish(XMLData):
     '''Converts between XML and data using the BadgerFish convention'''
-
     def __init__(self, **kwargs):
-        super(BadgerFish, self).__init__(
-            attr_prefix='@', text_content='$', **kwargs)
+        super(BadgerFish, self).__init__(attr_prefix='@', text_content='$', **kwargs)
 
 
 class GData(XMLData):
     '''Converts between XML and data using the GData convention'''
-
     def __init__(self, **kwargs):
         super(GData, self).__init__(text_content='$t', **kwargs)
 
 
 class Yahoo(XMLData):
     '''Converts between XML and data using the Yahoo convention'''
-
     def __init__(self, **kwargs):
         kwargs.setdefault('xml_fromstring', False)
-        super(Yahoo, self).__init__(
-            text_content='content', simple_text=True, **kwargs)
+        super(Yahoo, self).__init__(text_content='content', simple_text=True, **kwargs)
 
 
 class Parker(XMLData):
     '''Converts between XML and data using the Parker convention'''
-
     def __init__(self, **kwargs):
         super(Parker, self).__init__(**kwargs)
 
     def data(self, root, preserve_root=False):
         'Convert etree.Element into a dictionary'
         # If preserve_root is False, return the root element. This is easiest
-        # done by wrapping the XML in a dummy root element that will be
-        # ignored.
+        # done by wrapping the XML in a dummy root element that will be ignored.
         if preserve_root:
             new_root = root.makeelement('dummy_root', {})
             new_root.insert(0, root)
@@ -196,18 +188,15 @@ class Parker(XMLData):
             if count[child.tag] == 1:
                 result[child.tag] = self.data(child)
             else:
-                result.setdefault(child.tag, self.list()
-                                  ).append(self.data(child))
+                result.setdefault(child.tag, self.list()).append(self.data(child))
 
         return result
 
 
 class Abdera(XMLData):
     '''Converts between XML and data using the Abdera convention'''
-
     def __init__(self, **kwargs):
-        super(Abdera, self).__init__(
-            simple_text=True, text_content=True, **kwargs)
+        super(Abdera, self).__init__(simple_text=True, text_content=True, **kwargs)
 
     def data(self, root):
         '''Convert etree.Element into a dictionary'''
@@ -232,13 +221,13 @@ class Abdera(XMLData):
                     value = self._fromstring(text)
                 else:
                     children_list = [self._fromstring(text), ]
-        count = Counter(child.tag for child in children)
 
+        count = Counter(child.tag for child in children)
         for child in children:
             child_data = self.data(child)
-            if (count[child.tag] == 1 and
-                    len(children_list) > 0 and
-                    isinstance(children_list[-1], dict)):
+            if (count[child.tag] == 1
+                    and len(children_list) > 0
+                    and isinstance(children_list[-1], dict)):
                 # Merge keys to existing dictionary
                 children_list[-1].update(child_data)
             else:
@@ -260,7 +249,6 @@ class Abdera(XMLData):
 # https://github.com/datacenter/cobra/blob/master/cobra/internal/codec/jsoncodec.py
 class Cobra(XMLData):
     '''Converts between XML and data using the Cobra convention'''
-
     def __init__(self, **kwargs):
         super(Cobra, self).__init__(simple_text=True, text_content=True,
                                     xml_fromstring=False, **kwargs)
@@ -292,9 +280,9 @@ class Cobra(XMLData):
         count = Counter(child.tag for child in children)
         for child in children:
             child_data = self.data(child)
-            if (count[child.tag] == 1 and
-                    len(children_list) > 0 and
-                    isinstance(children_list[-1], dict)):
+            if (count[child.tag] == 1
+                    and len(children_list) > 0
+                    and isinstance(children_list[-1], dict)):
                 # Merge keys to existing dictionary
                 children_list[-1].update(child_data)
             else:
