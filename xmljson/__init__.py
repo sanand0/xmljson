@@ -223,16 +223,10 @@ class Abdera(XMLData):
                     children_list = [self._fromstring(text), ]
 
         count = Counter(child.tag for child in children)
+
         for child in children:
             child_data = self.data(child)
-            if (count[child.tag] == 1
-                    and len(children_list) > 0
-                    and isinstance(children_list[-1], dict)):
-                # Merge keys to existing dictionary
-                children_list[-1].update(child_data)
-            else:
-                # Add additional text
-                children_list.append(self.data(child))
+            children_list.append(self.data(child))
 
         # Flatten children
         if len(root.attrib) == 0 and len(children_list) == 1:
@@ -281,7 +275,7 @@ class Cobra(XMLData):
         for child in children:
             child_data = self.data(child)
             if (count[child.tag] == 1
-                    and len(children_list) > 0
+                    and len(children_list) > 1
                     and isinstance(children_list[-1], dict)):
                 # Merge keys to existing dictionary
                 children_list[-1].update(child_data)

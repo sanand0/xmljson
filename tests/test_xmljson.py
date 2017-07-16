@@ -587,8 +587,17 @@ class TestAbdera(TestXmlJson):
             '<alice charlie="david">bob</alice>')
 
         # Nested elements with more than one children
-        eq('{"Data": {"attributes": {"version": 9.0,"{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation": "comp.xsd"},"children": [{"Airport": {"attributes": {"country": "Samoa","city": "Apia","name": "Faleolo Intl","lat": -13.8296668231487,"lon": -171.997166723013,"alt": "17.678M","ident": "NSFA"},"children": [{"Services": {"Fuel": {"attributes": {"type": "JETA","availability": "YES"}}}},{"Tower": {"attributes": {"lat": -13.8320958986878,"lon": -171.998676359653,"alt": "0.0M"}},"Runway": {"attributes": {"lat": -13.8300792127848,"lon": -172.008545994759,"alt": "17.678M","surface": "ASPHALT","heading": 89.3199996948242,"length": "2999.23M","width": "45.11M","number": 8,"designator": "NONE"}}}]}}]}}',
+        eq('{"Data":{"attributes":{"version":9.0,"{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation":"comp.xsd"},"children":[{"Airport":{"attributes":{"country":"Samoa","city":"Apia","name":"Faleolo Intl","lat":-13.8296668231487,"lon":-171.997166723013,"alt":"17.678M","ident":"NSFA"},"children":[{"Services":{"Fuel":{"attributes":{"type":"JETA","availability":"YES"}}}},{"Tower":{"attributes":{"lat":-13.8320958986878,"lon":-171.998676359653,"alt":"0.0M"}}},{"Runway":{"attributes":{"lat":-13.8300792127848,"lon":-172.008545994759,"alt":"17.678M","surface":"ASPHALT","heading":89.3199996948242,"length":"2999.23M","width":"45.11M","number":8,"designator":"NONE"}}}]}}]}}',
             '<Data version="9.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="comp.xsd"><Airport country="Samoa" city="Apia" name="Faleolo Intl" lat="-13.8296668231487" lon="-171.997166723013" alt="17.678M" ident="NSFA"><Services><Fuel type="JETA" availability="YES"/></Services><Tower lat="-13.8320958986878" lon="-171.998676359653" alt="0.0M"></Tower><Runway lat="-13.8300792127848" lon="-172.008545994759" alt="17.678M" surface="ASPHALT" heading="89.3199996948242" length="2999.23M" width="45.11M" number="08" designator="NONE"></Runway></Airport></Data>')
+
+        eq('{"root":{"children":[{"a":{"attributes":{"x": 1},"children":[{"b":{"c":{}}}]}},{"d":{"attributes":{"x": 1},"children":[{"e":{"f":{}}}]}},{"g":{"attributes":{"x": 1},"children":[{"h":{"i":{}}}]}}]}}',
+           '<root><a x="1"><b><c/></b></a><d x="1"><e><f/></e></d><g x="1"><h><i/></h></g></root>')
+
+        eq('{"root": {"children": [{"a": {"attributes": {"x": 1}, "children": [{"b": {"c": {"d": {"attributes": {"x": 1}}}}}]}}, {"e": {"attributes": {"x": 1}, "children": [{"f": {"g": {"h": {"attributes": {"x": 1}}}}}]}}, {"i": {"attributes": {"x": 1}, "children": [{"j": {"k": {"l": {"attributes": {"x": 1}}}}}]}}]}}',
+           '<root><a x="1"><b><c><d x="1"/></c></b></a><e x="1"><f><g><h x="1"/></g></f></e><i x="1"><j><k><l x="1"/></k></j></i></root>')
+
+        eq('{"root": {"a": {"attributes": {"x": 1}, "children": [{"b": {"attributes": {"x": 1}, "children": [{"c": {"attributes": {"x": 1}, "children": [{"d": {}}]}}]}}]}}}',
+           '<root><a x="1"><b x="1"><c x="1"><d/></c></b></a></root>')
 
 
 class TestCobra(TestXmlJson):
