@@ -226,7 +226,7 @@ class Abdera(XMLData):
 
         for child in children:
             child_data = self.data(child)
-            children_list.append(self.data(child))
+            children_list.append(child_data)
 
         # Flatten children
         if len(root.attrib) == 0 and len(children_list) == 1:
