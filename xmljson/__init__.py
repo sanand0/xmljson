@@ -222,8 +222,6 @@ class Abdera(XMLData):
                 else:
                     children_list = [self._fromstring(text), ]
 
-        count = Counter(child.tag for child in children)
-
         for child in children:
             child_data = self.data(child)
             children_list.append(child_data)
