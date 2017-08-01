@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.8'
+__version__ = '0.1.9'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -272,9 +272,9 @@ class Cobra(XMLData):
         count = Counter(child.tag for child in children)
         for child in children:
             child_data = self.data(child)
-            if (count[child.tag] == 1
-                    and len(children_list) > 1
-                    and isinstance(children_list[-1], dict)):
+            if (count[child.tag] == 1 and
+                    len(children_list) > 1 and
+                    isinstance(children_list[-1], dict)):
                 # Merge keys to existing dictionary
                 children_list[-1].update(child_data)
             else:

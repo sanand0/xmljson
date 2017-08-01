@@ -8,6 +8,8 @@ test_xmljson
 Tests for `xmljson` module.
 '''
 
+import io
+import os
 import sys
 import json
 import unittest
@@ -20,6 +22,8 @@ import lxml.etree
 import xml.etree.cElementTree
 import xmljson
 
+_folder = os.path.dirname(os.path.abspath(__file__))
+
 # For Python 3, decode byte strings as UTF-8
 if sys.version_info[0] == 3:
     def decode(s):
@@ -27,6 +31,11 @@ if sys.version_info[0] == 3:
 elif sys.version_info[0] == 2:
     def decode(s):
         return s
+
+
+def read(path):
+    with io.open(os.path.join(_folder, path), 'r', encoding='utf-8') as handle:
+        return handle.read()
 
 
 class TestXmlJson(unittest.TestCase):
@@ -126,8 +135,7 @@ class TestBadgerFish(TestXmlJson):
             ('p', {'$': 'paragraph'}),
             ('hr', {}),
             ('ul', {'li': [{'$': '1'}, {'$': '2'}]}),
-            ])},
-           '<div><p>paragraph</p><hr><ul><li>1</li><li>2</li></ul></div>')
+        ])}, '<div><p>paragraph</p><hr><ul><li>1</li><li>2</li></ul></div>')
 
     def test_data(self):
         'BadgerFish conversion from etree to data'
@@ -587,17 +595,10 @@ class TestAbdera(TestXmlJson):
             '<alice charlie="david">bob</alice>')
 
         # Nested elements with more than one children
-        eq('{"Data":{"attributes":{"version":9.0,"{http://www.w3.org/2001/XMLSchema-instance}noNamespaceSchemaLocation":"comp.xsd"},"children":[{"Airport":{"attributes":{"country":"Samoa","city":"Apia","name":"Faleolo Intl","lat":-13.8296668231487,"lon":-171.997166723013,"alt":"17.678M","ident":"NSFA"},"children":[{"Services":{"Fuel":{"attributes":{"type":"JETA","availability":"YES"}}}},{"Tower":{"attributes":{"lat":-13.8320958986878,"lon":-171.998676359653,"alt":"0.0M"}}},{"Runway":{"attributes":{"lat":-13.8300792127848,"lon":-172.008545994759,"alt":"17.678M","surface":"ASPHALT","heading":89.3199996948242,"length":"2999.23M","width":"45.11M","number":8,"designator":"NONE"}}}]}}]}}',
-            '<Data version="9.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="comp.xsd"><Airport country="Samoa" city="Apia" name="Faleolo Intl" lat="-13.8296668231487" lon="-171.997166723013" alt="17.678M" ident="NSFA"><Services><Fuel type="JETA" availability="YES"/></Services><Tower lat="-13.8320958986878" lon="-171.998676359653" alt="0.0M"></Tower><Runway lat="-13.8300792127848" lon="-172.008545994759" alt="17.678M" surface="ASPHALT" heading="89.3199996948242" length="2999.23M" width="45.11M" number="08" designator="NONE"></Runway></Airport></Data>')
-
-        eq('{"root":{"children":[{"a":{"attributes":{"x": 1},"children":[{"b":{"c":{}}}]}},{"d":{"attributes":{"x": 1},"children":[{"e":{"f":{}}}]}},{"g":{"attributes":{"x": 1},"children":[{"h":{"i":{}}}]}}]}}',
-           '<root><a x="1"><b><c/></b></a><d x="1"><e><f/></e></d><g x="1"><h><i/></h></g></root>')
-
-        eq('{"root": {"children": [{"a": {"attributes": {"x": 1}, "children": [{"b": {"c": {"d": {"attributes": {"x": 1}}}}}]}}, {"e": {"attributes": {"x": 1}, "children": [{"f": {"g": {"h": {"attributes": {"x": 1}}}}}]}}, {"i": {"attributes": {"x": 1}, "children": [{"j": {"k": {"l": {"attributes": {"x": 1}}}}}]}}]}}',
-           '<root><a x="1"><b><c><d x="1"/></c></b></a><e x="1"><f><g><h x="1"/></g></f></e><i x="1"><j><k><l x="1"/></k></j></i></root>')
-
-        eq('{"root": {"a": {"attributes": {"x": 1}, "children": [{"b": {"attributes": {"x": 1}, "children": [{"c": {"attributes": {"x": 1}, "children": [{"d": {}}]}}]}}]}}}',
-           '<root><a x="1"><b x="1"><c x="1"><d/></c></b></a></root>')
+        eq(read('abdera-1.json'), read('abdera-1.xml'))
+        eq(read('abdera-2.json'), read('abdera-2.xml'))
+        eq(read('abdera-3.json'), read('abdera-3.xml'))
+        eq(read('abdera-4.json'), read('abdera-4.xml'))
 
 
 class TestCobra(TestXmlJson):
@@ -620,8 +621,8 @@ class TestCobra(TestXmlJson):
            '<x><a/></x>')
         eq('{"x": {"attributes": {"x": "1"}}}',
            '<x x="1"/>')
-        eq('{"root": {"attributes": {}, "children": [{"x": {"attributes": {"x": "1"}}},'
-            + ' {"y": {"attributes": {}, "children": [{"z": {"attributes": {}}}]}}]}}',
+        eq('{"root": {"attributes": {}, "children": [{"x": {"attributes": {"x": "1"}}},' +
+            ' {"y": {"attributes": {}, "children": [{"z": {"attributes": {}}}]}}]}}',
            '<root><x x="1"/><y><z/></y></root>')
 
         # Attributes

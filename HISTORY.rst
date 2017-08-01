@@ -3,6 +3,13 @@
 History
 -------
 
+0.1.9 (1 Aug 2017)
+~~~~~~~~~~~~~~~~~~
+
+- Bugfix and test cases for multiple nested children in Abdera_ convention
+
+Thanks to @mukultaneja
+
 0.1.8 (9 May 2017)
 ~~~~~~~~~~~~~~~~~~
 
