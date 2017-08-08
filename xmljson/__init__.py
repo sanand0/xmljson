@@ -56,21 +56,29 @@ class XMLData(object):
     @staticmethod
     def _fromstring(value):
         '''Convert XML string value to None, boolean, int or float'''
-        if not value:
+        # NOTE: Is this even possible ?
+        if value is None:
             return None
-        std_value = value.strip().lower()
-        if std_value == 'true':
+
+        # FIXME: In XML, booleans are either 0/false or 1/true (lower-case !)
+        if value.lower() == 'true':
             return True
-        elif std_value == 'false':
+        elif value.lower() == 'false':
             return False
+
+        # FIXME: Using int() or float() is eating whitespaces unintendedly here
         try:
-            return int(std_value)
+            return int(value)
         except ValueError:
             pass
+
         try:
-            return float(std_value)
+            # Test for infinity and NaN values
+            if float('-inf') < float(value) < float('inf'):
+                return float(value)
         except ValueError:
             pass
+
         return value
 
     def etree(self, data, root=None):
