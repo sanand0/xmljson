@@ -602,10 +602,51 @@ class TestAbdera(TestXmlJson):
 
 
 class TestCobra(TestXmlJson):
-    @unittest.skip('To be written')
+
     def test_etree(self, converter=None):
         'Cobra conversion from data to etree'
-        pass
+        eq = self.check_etree(xmljson.cobra)
+
+        eq({'animal': {'attributes': {}}}, '<animal/>')
+        eq({'animal': {'attributes': {}, 'children': ['Deka']}}, '<animal>Deka</animal>')
+        eq({'animal': {'attributes': {}, 'children': [1]}}, '<animal>1</animal>')
+        eq({'animal': {'attributes': {'name': 1}}}, '<animal name="1"/>')
+        eq({'animal': 'is my cat'},
+           '<animal>is my cat</animal>')
+        eq({'animal': {'attributes': {}, 'children': [{'dog': 'Charlie'}, {'cat': 'Deka'}]}},
+           '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
+        eq({'animal': {'attributes': {}, 'children': [{'dog': 'Charlie'}, {'dog': 'Mad Max'}]}},
+           '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
+        #eq({'animal': {'attributes': {}, 'children': [{'dog': {'attributes': {}, 'children': ['Charlie', 'Mad Max']}}]}},
+        #   '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
+        eq({'animal': {'attributes': {'dog': 'Charlie', 'cat': 'Deka'}}},
+           '<animal dog="Charlie" cat="Deka"/>')
+        eq({'animal': {'attributes': {}, 'children': [' in my house ', {'dog': 'Charlie'}]}},
+           '<animal> in my house <dog>Charlie</dog></animal>')
+        eq({'animal': {'attributes': {'dog': 'Charlie'}, 'children': [' in my house ']}},
+           '<animal dog="Charlie"> in my house </animal>')
+
+        # Test edge cases
+        eq('x', '<x/>')             # Strings become elements
+        eq({})                      # Empty objects become empty nodes
+        eq(Dict([                   # Multiple keys become multiple nodes
+            ('x', 'a'),
+            ('y', 'b')
+        ]), '<x>a</x>', '<y>b</y>')
+        with self.assertRaises(Exception):
+            eq({'x': {'@x': 1}}, '<x x="1"/>')
+
+        # Nested elements
+        eq({'alice': {'attributes': {}, 'children': [
+            {'bob': {'attributes': {}, 'children': [{'charlie': {'attributes': {}}}]}},
+            {'david': {'attributes': {}, 'children': [{'edgar': {'attributes': {}}}]}}]}},
+           '<alice><bob><charlie/></bob><david><edgar/></david></alice>')
+
+        # Multiple elements at the same level become array elements.
+        eq({'alice': {'attributes': {}, 'children': [
+            {'bob': {'attributes': {}, 'children': [{'charlie': {'attributes': {}}}]}},
+            {'bob': {'attributes': {}, 'children': [{'david': {'attributes': {}}}]}}]}},
+           '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
 
     @unittest.skip('To be written')
     def test_html(self):

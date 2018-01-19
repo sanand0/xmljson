@@ -252,6 +252,35 @@ class Cobra(XMLData):
     def __init__(self, **kwargs):
         super(Cobra, self).__init__(simple_text=True, text_content=True,
                                     xml_fromstring=False, **kwargs)
+    def etree(self, data, root=None):
+        '''Convert data structure into a list of etree.Element'''
+        result = self.list() if root is None else root
+        if isinstance(data, (self.dict, dict)):
+            for key, value in data.items():
+                if isinstance(value, (self.dict, dict)):
+                    elem = self.element(key)
+                    result.append(elem)
+
+                    if 'attributes' in value:
+                        for k, v in value['attributes'].items():
+                            elem.set(k, self._tostring(v))
+                    else:
+                        raise ValueError("Cobra convention requires an attributes key for each element")
+
+                    if 'children' in value:
+                        for v in value['children']:
+                            self.etree(v, root=elem)
+                else:
+                    elem = self.element(key)
+                    elem.text = self._tostring(value)
+                    result.append(elem)
+        else:
+            if root is not None:
+                root.text = self._tostring(data)
+            else:
+                result.append(self.element(self._tostring(data)))
+
+        return result
 
     def data(self, root):
         '''Convert etree.Element into a dictionary'''
