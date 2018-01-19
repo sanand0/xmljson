@@ -195,3 +195,4 @@ Roadmap
 
 * Test cases for Unicode
 * Support for namespaces and namespace prefixes
+* Support XML comments
