@@ -256,8 +256,8 @@ class Cobra(XMLData):
                     if 'attributes' in value:
                         for k, v in value['attributes'].items():
                             elem.set(k, self._tostring(v))
-                    else:
-                        raise ValueError("Cobra convention requires an attributes key for each element")
+                    # else:
+                    #     raise ValueError("Cobra convention requires an attributes key for each element")
 
                     if 'children' in value:
                         for v in value['children']:
