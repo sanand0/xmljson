@@ -179,7 +179,10 @@ class Parker(XMLData):
         # If no children, just return the text
         children = [node for node in root if isinstance(node.tag, basestring)]
         if len(children) == 0:
-            return self._fromstring(root.text)
+            if root.text is None:
+                return ''
+            else:
+                return self._fromstring(root.text)
 
         # Element names become object properties
         count = Counter(child.tag for child in children)
