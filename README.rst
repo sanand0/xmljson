@@ -190,6 +190,37 @@ This is a pure-Python package built for Python 2.6+ and Python 3.0+. To set up::
 
     pip install xmljson
 
+
+Simple CLI utility
+------------------
+
+After installation, you can benefit from using this package as simple CLI utility. By now only XML to JSON conversion supported. Example::
+
+    $ python -m xmljson -h
+    usage: xmljson [-h] [-o OUT_FILE] [-c CONVERTER] [in_file]
+
+    positional arguments:
+      in_file
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -o OUT_FILE, --out-file OUT_FILE
+      -c CONVERTER, --converter CONVERTER
+
+    $ python -m xmljson -c parker mydata.xml
+    {
+      "foo": "spam",
+      "bar": 42
+    }
+
+This is a typical UNIX filter program: it reads file (or ``stdin``), processes it in some way (convert XML to JSON in this case), then prints it to ``stdout`` (or file). Example with pipe::
+
+    $ some-xml-producer | python -m xmljson | some-json-processor
+
+There is also ``pip``'s ``console_script`` entry-point, you can call this utility as ``x2j``::
+
+    $ x2j -c abdera mydata.xml
+
 Roadmap
 -------
 
