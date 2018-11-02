@@ -20,7 +20,7 @@ def main():
     args = parser.parse_args()
 
     with closing(args.in_file) as in_file, closing(args.out_file) as out_file:
-        json.dump(args.converter.data(etree.parse(in_file).getroot()), out_file, indent=2, ensure_ascii=False)
+        json.dump(args.converter.data(etree.parse(in_file).getroot()), out_file, indent=2)
 
 
 if __name__ == '__main__':
