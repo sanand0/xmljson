@@ -17,6 +17,10 @@ if sys.version_info[0] == 3:
     basestring = str
 
 
+class Error(Exception): pass
+class UnknownDialectError(Error): pass
+
+
 class XMLData(object):
     def __init__(self, xml_fromstring=True, xml_tostring=True, element=None, dict_type=None,
                  list_type=None, attr_prefix=None, text_content=None, simple_text=False):
@@ -149,6 +153,23 @@ class XMLData(object):
                 result = value.setdefault(child.tag, self.list())
                 result += self.data(child).values()
         return self.dict([(root.tag, value)])
+
+    @staticmethod
+    def converter(dialect):
+        if dialect == 'badgerfish':
+            return BadgerFish()
+        elif dialect == 'gdata':
+            return GData()
+        elif dialect == 'yahoo':
+            return Yahoo()
+        elif dialect == 'parker':
+            return Parker()
+        elif dialect == 'abdera':
+            return Abdera()
+        elif dialect == 'cobra':
+            return Cobra()
+        else:
+            raise UnknownDialectError(dialect)
 
 
 class BadgerFish(XMLData):

@@ -46,4 +46,9 @@ setup(
     ],
     test_suite='tests',
     tests_require=['lxml'],
+    entry_points={
+        'console_scripts': [
+            'x2j = xmljson.__main__:main'
+        ]
+    }
 )
