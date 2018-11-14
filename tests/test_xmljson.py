@@ -12,6 +12,7 @@ import io
 import os
 import sys
 import json
+import string
 import unittest
 
 from collections import OrderedDict as Dict
@@ -38,6 +39,17 @@ def read(path):
         return handle.read()
 
 
+def test_invalid_tags(converter):
+    # Test if invalid tags are dropped
+    # Naming rules from https://www.w3schools.com/xml/xml_elements.asp
+    invalid_tags = []
+    invalid_tags.extend(['0', 'xml', 'XML', 'XmL', 'invalid tag'])
+    invalid_tags.extend(list(string.punctuation))
+    for tag in invalid_tags:
+        converter.etree('<{}>'.format(tag),
+                        drop_invalid_tags=True)
+
+
 class TestXmlJson(unittest.TestCase):
 
     def setUp(self):
@@ -53,7 +65,8 @@ class TestXmlJson(unittest.TestCase):
             self.assertEqual(len(tree), len(strings))
             for left, right in zip(tree, strings):
                 if not eq(left, fromstring(right)):
-                    raise AssertionError('%s != %s' % (decode(tostring(left)), right))
+                    raise AssertionError('%s != %s' % (decode(tostring(left)),
+                                                       right))
 
         return compare
 
@@ -123,6 +136,7 @@ class TestBadgerFish(TestXmlJson):
         # Attributes go in properties whose names begin with @.
         eq({'alice': {'$': 'bob', '@charlie': 'david'}},
             '<alice charlie="david">bob</alice>')
+        test_invalid_tags(xmljson.badgerfish)
 
     def test_html(self):
         'BadgerFish conversion from data to HTML'
@@ -172,8 +186,9 @@ class TestBadgerFish(TestXmlJson):
 
     def test_xml_namespace(self):
         'XML namespaces are not yet implemented'
+        value = {'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}}
         with self.assertRaises(ValueError):
-            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
+            xmljson.badgerfish.etree(value)
 
     def test_custom_dict(self):
         'Conversion to dict uses OrderedDict'
@@ -184,9 +199,9 @@ class TestBadgerFish(TestXmlJson):
     def test_custom_root(self):
         for etree in (xml.etree.cElementTree, lxml.etree, lxml.html):
             conv = xmljson.BadgerFish(element=etree.Element)
-            self.assertEqual(
-                decode(etree.tostring(conv.etree({'p': {'$': 1}}, etree.fromstring('<html/>')))),
-                '<html><p>1</p></html>')
+            etree_string = etree.tostring(
+                conv.etree({'p': {'$': 1}}, etree.fromstring('<html/>')))
+            self.assertEqual(decode(etree_string), '<html><p>1</p></html>')
 
     def test_xml_fromstring(self):
         'xml_fromstring=False does not convert types'
@@ -208,6 +223,7 @@ class TestBadgerFish(TestXmlJson):
 class TestGData(TestXmlJson):
 
     def test_etree(self):
+        test_invalid_tags(xmljson.gdata)
         'GData conversion from etree to data'
         eq = self.check_etree(xmljson.gdata)
 
@@ -218,7 +234,8 @@ class TestGData(TestXmlJson):
         eq({'animal': {'name': 1}}, '<animal name="1"/>')
         eq({'animal': {'$t': 'is my cat'}},
            '<animal>is my cat</animal>')
-        eq({'animal': Dict([('dog', {'$t': 'Charlie'}), ('cat', {'$t': 'Deka'})])},
+        eq({'animal': Dict([('dog', {'$t': 'Charlie'}),
+                            ('cat', {'$t': 'Deka'})])},
            '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
         eq({'animal': Dict([('dog', 'Charlie'), ('cat', 'Deka')])},
            '<animal dog="Charlie" cat="Deka"/>')
@@ -290,8 +307,10 @@ class TestGData(TestXmlJson):
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
 
         # Comments do not matter
-        eq('{"root": {"version": 1.0, "$t": "testing", "element": {"test": true, "$t": 1}}}',
-           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
+        eq('''{"root": {"version": 1.0, "$t": "testing",
+        "element": {"test": true, "$t": 1}}}''',
+           '''<root version="1.0">testing<!--comment-->
+           <element test="true">1</element></root>''')
 
     def test_xml_fromstring(self):
         'xml_fromstring=False does not convert types'
@@ -313,6 +332,7 @@ class TestGData(TestXmlJson):
 class TestParker(TestXmlJson):
 
     def test_etree(self):
+        test_invalid_tags(xmljson.parker)
         'Parker conversion from data to etree'
         eq = self.check_etree(xmljson.parker)
 
@@ -393,11 +413,14 @@ class TestParker(TestXmlJson):
 
         # Mixed mode text-nodes, comments and attributes get absorbed:
         eq('{"element": 1}',
-           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
+           '''<root version="1.0">testing<!--comment-->
+           <element test="true">1</element></root>''')
 
-        # Namespaces get absorbed, and prefixes will just be part of the property name:
+        # Namespaces get absorbed, and prefixes will just be part of the
+        # property name:
         eq('{"{http://zanstra.com/ding}dong": "binnen"}',
-           '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
+           '''<root xmlns:ding="http://zanstra.com/ding">
+           <ding:dong>binnen</ding:dong></root>''')
 
     def test_data_with_root(self):
         'Parker conversion from etree to data preserving root'
@@ -447,11 +470,14 @@ class TestParker(TestXmlJson):
 
         # Mixed mode text-nodes, comments and attributes get absorbed:
         eq('{"root": {"element": 1}}',
-           '<root version="1.0">testing<!--comment--><element test="true">1</element></root>')
+           '''<root version="1.0">testing<!--comment--><element
+           test="true">1</element></root>''')
 
-        # Namespaces get absorbed, and prefixes will just be part of the property name:
+        # Namespaces get absorbed, and prefixes will just be part of the
+        # property name:
         eq('{"root": {"{http://zanstra.com/ding}dong": "binnen"}}',
-           '<root xmlns:ding="http://zanstra.com/ding"><ding:dong>binnen</ding:dong></root>')
+           '''<root xmlns:ding="http://zanstra.com/ding">
+           <ding:dong>binnen</ding:dong></root>''')
 
     def test_xml_fromstring(self):
         'xml_fromstring=False does not convert types'
@@ -567,13 +593,15 @@ class TestAbdera(TestXmlJson):
            '<x><a/></x>')
         eq('{"x": {"attributes": {"x": 1}}}',
            '<x x="1"/>')
-        eq('{"root": {"children": [{"x": {"attributes": {"x": 1}}}, {"y": {"z": {}}}]}}',
+        eq('''{"root": {"children": [{"x": {"attributes": {"x": 1}}},
+           {"y": {"z": {}}}]}}''',
            '<root><x x="1"/><y><z/></y></root>')
 
         # Attributes
         eq('{"p": {"attributes": {"id": 1}, "children": ["text"]}}',
            '<p id="1">text</p>')
-        eq('{"div": {"attributes": {"id": 2}, "children": ["parent-text", {"p": "text"}]}}',
+        eq('''{"div": {"attributes": {"id": 2},
+           "children": ["parent-text", {"p": "text"}]}}''',
            '<div id="2">parent-text<p>text</p></div>')
 
         # Text content of elements
@@ -591,7 +619,8 @@ class TestAbdera(TestXmlJson):
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
 
         # Attributes go in specific "attributes" dictionary
-        eq('{"alice": {"attributes": {"charlie": "david"}, "children": ["bob"]}}',
+        eq('''{"alice": {"attributes": {"charlie": "david"},
+        "children": ["bob"]}}''',
             '<alice charlie="david">bob</alice>')
 
         # Nested elements with more than one children
@@ -604,26 +633,35 @@ class TestAbdera(TestXmlJson):
 class TestCobra(TestXmlJson):
 
     def test_etree(self, converter=None):
+        test_invalid_tags(xmljson.cobra)
         'Cobra conversion from data to etree'
         eq = self.check_etree(xmljson.cobra)
 
         eq({'animal': {'attributes': {}}}, '<animal/>')
-        eq({'animal': {'attributes': {}, 'children': ['Deka']}}, '<animal>Deka</animal>')
-        eq({'animal': {'attributes': {}, 'children': [1]}}, '<animal>1</animal>')
+        eq({'animal': {'attributes': {}, 'children': ['Deka']}},
+           '<animal>Deka</animal>')
+        eq({'animal': {'attributes': {}, 'children': [1]}},
+           '<animal>1</animal>')
         eq({'animal': {'attributes': {'name': 1}}}, '<animal name="1"/>')
         eq({'animal': 'is my cat'},
            '<animal>is my cat</animal>')
-        eq({'animal': {'attributes': {}, 'children': [{'dog': 'Charlie'}, {'cat': 'Deka'}]}},
+        eq({'animal': {'attributes': {},
+                       'children': [{'dog': 'Charlie'}, {'cat': 'Deka'}]}},
            '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
-        eq({'animal': {'attributes': {}, 'children': [{'dog': 'Charlie'}, {'dog': 'Mad Max'}]}},
+        eq({'animal': {'attributes': {}, 'children': [{'dog': 'Charlie'},
+                                                      {'dog': 'Mad Max'}]}},
            '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
-        #eq({'animal': {'attributes': {}, 'children': [{'dog': {'attributes': {}, 'children': ['Charlie', 'Mad Max']}}]}},
+        # eq({'animal': {'attributes': {}, 'children': [{'dog': {'attributes':
+        # {}, 'children': ['Charlie', 'Mad Max']}}]}},
         #   '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
         eq({'animal': {'attributes': {'dog': 'Charlie', 'cat': 'Deka'}}},
            '<animal dog="Charlie" cat="Deka"/>')
-        eq({'animal': {'attributes': {}, 'children': [' in my house ', {'dog': 'Charlie'}]}},
+        eq({'animal': {
+            'attributes': {},
+            'children': [' in my house ', {'dog': 'Charlie'}]}},
            '<animal> in my house <dog>Charlie</dog></animal>')
-        eq({'animal': {'attributes': {'dog': 'Charlie'}, 'children': [' in my house ']}},
+        eq({'animal': {'attributes': {'dog': 'Charlie'},
+                       'children': [' in my house ']}},
            '<animal dog="Charlie"> in my house </animal>')
 
         # Test edge cases
@@ -638,14 +676,23 @@ class TestCobra(TestXmlJson):
 
         # Nested elements
         eq({'alice': {'attributes': {}, 'children': [
-            {'bob': {'attributes': {}, 'children': [{'charlie': {'attributes': {}}}]}},
-            {'david': {'attributes': {}, 'children': [{'edgar': {'attributes': {}}}]}}]}},
+            {'bob':
+             {'attributes': {},
+              'children': [
+                  {'charlie': {'attributes': {}}}]}
+             },
+            {'david':
+             {'attributes': {},
+              'children': [
+                  {'edgar': {'attributes': {}}}]}}]}},
            '<alice><bob><charlie/></bob><david><edgar/></david></alice>')
 
         # Multiple elements at the same level become array elements.
         eq({'alice': {'attributes': {}, 'children': [
-            {'bob': {'attributes': {}, 'children': [{'charlie': {'attributes': {}}}]}},
-            {'bob': {'attributes': {}, 'children': [{'david': {'attributes': {}}}]}}]}},
+            {'bob': {'attributes': {}, 'children': [{'charlie': {'attributes':
+                                                                 {}}}]}},
+            {'bob': {'attributes': {}, 'children': [{'david': {'attributes':
+                                                               {}}}]}}]}},
            '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
 
     @unittest.skip('To be written')
@@ -658,18 +705,21 @@ class TestCobra(TestXmlJson):
         eq = self.check_data(xmljson.cobra)
 
         # Dicts
-        eq('{"x": {"attributes": {}, "children": [{"a": {"attributes": {}}}]}}',
+        eq('''{"x": {"attributes": {}, "children": [{"a": {"attributes":
+           {}}}]}}''',
            '<x><a/></x>')
         eq('{"x": {"attributes": {"x": "1"}}}',
            '<x x="1"/>')
-        eq('{"root": {"attributes": {}, "children": [{"x": {"attributes": {"x": "1"}}},' +
-            ' {"y": {"attributes": {}, "children": [{"z": {"attributes": {}}}]}}]}}',
+        eq('''{"root": {"attributes": {}, "children": [{"x": {"attributes":
+        {"x": "1"}}}, {"y": {"attributes": {}, "children": [{"z":
+           {"attributes": {}}}]}}]}}''',
            '<root><x x="1"/><y><z/></y></root>')
 
         # Attributes
         eq('{"p": {"attributes": {"id": "1"}, "children": ["text"]}}',
            '<p id="1">text</p>')
-        eq('{"div": {"attributes": {"id": "2"}, "children": ["parent-text", {"p": "text"}]}}',
+        eq('''{"div": {"attributes": {"id": "2"}, "children": ["parent-text",
+           {"p": "text"}]}}''',
            '<div id="2">parent-text<p>text</p></div>')
 
         # Text content of elements
@@ -677,15 +727,18 @@ class TestCobra(TestXmlJson):
            '<alice>bob</alice>')
 
         # Nested elements become nested properties
-        eq('{"alice": {"attributes": {}, "children": [{"bob": "charlie"}, {"david": "edgar"}]}}',
+        eq('''{"alice": {"attributes": {}, "children": [{"bob": "charlie"},
+           {"david": "edgar"}]}}''',
            '<alice><bob>charlie</bob><david>edgar</david></alice>')
 
         # Multiple elements at the same level become array elements.
         eq('{"alice": {"attributes": {}, "children": [{"bob": "charlie"}]}}',
            '<alice><bob>charlie</bob></alice>')
-        eq('{"alice": {"attributes": {}, "children": [{"bob": "charlie"}, {"bob": "david"}]}}',
+        eq('''{"alice": {"attributes": {}, "children": [{"bob": "charlie"},
+           {"bob": "david"}]}}''',
            '<alice><bob>charlie</bob><bob>david</bob></alice>')
 
         # Attributes go in specific "attributes" dictionary
-        eq('{"alice": {"attributes": {"charlie": "david"}, "children": ["bob"]}}',
+        eq('''{"alice": {"attributes": {"charlie": "david"}, "children":
+           ["bob"]}}''',
             '<alice charlie="david">bob</alice>')
