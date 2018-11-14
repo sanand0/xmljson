@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.9'
+__version__ = '0.1.9.1'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -18,8 +18,9 @@ if sys.version_info[0] == 3:
 
 
 class XMLData(object):
-    def __init__(self, xml_fromstring=True, xml_tostring=True, element=None, dict_type=None,
-                 list_type=None, attr_prefix=None, text_content=None, simple_text=False):
+    def __init__(self, xml_fromstring=True, xml_tostring=True, element=None,
+                 dict_type=None, list_type=None, attr_prefix=None,
+                 text_content=None, simple_text=False):
         # xml_fromstring == False(y) => '1' -> '1'
         # xml_fromstring == True     => '1' -> 1
         # xml_fromstring == fn       => '1' -> fn(1)
@@ -81,7 +82,7 @@ class XMLData(object):
 
         return value
 
-    def etree(self, data, root=None):
+    def etree(self, data, root=None, drop_invalid_tags=False):
         '''Convert data structure into a list of etree.Element'''
         result = self.list() if root is None else root
         if isinstance(data, (self.dict, dict)):
@@ -94,9 +95,11 @@ class XMLData(object):
                     if self.attr_prefix is not None:
                         if key.startswith(self.attr_prefix):
                             key = key.lstrip(self.attr_prefix)
-                            # @xmlns: {$: xxx, svg: yyy} becomes xmlns="xxx" xmlns:svg="yyy"
+                            # @xmlns: {$: xxx, svg: yyy} becomes xmlns="xxx"
+                            # xmlns:svg="yyy"
                             if value_is_dict:
-                                raise ValueError('XML namespaces not yet supported')
+                                raise ValueError('XML namespaces not ' +
+                                                 'yet supported')
                             else:
                                 result.set(key, self._tostring(value))
                             continue
@@ -106,25 +109,39 @@ class XMLData(object):
                             result.text = self._tostring(value)
                             continue
                     # Treat scalars as text content, not children (GData)
-                    if self.attr_prefix is None and self.text_content is not None:
+                    if self.attr_prefix is None and \
+                            self.text_content is not None:
                         if not value_is_dict and not value_is_list:
                             result.set(key, self._tostring(value))
                             continue
                 # Add other keys as one or more children
                 values = value if value_is_list else [value]
                 for value in values:
-                    elem = self.element(key)
-                    result.append(elem)
+                    try:
+                        elem = self.element(key)
+                        result.append(elem)
+                    except ValueError:
+                        if not drop_invalid_tags:
+                            raise ValueError('Invalid tag ' + str(key))
+                        continue
+
                     # Treat scalars as text content, not children (Parker)
-                    if not isinstance(value, (self.dict, dict, self.list, list)):
+                    if not isinstance(value, (self.dict, dict, self.list,
+                                              list)):
                         if self.text_content:
                             value = {self.text_content: value}
-                    self.etree(value, root=elem)
+                    self.etree(value, root=elem,
+                               drop_invalid_tags=drop_invalid_tags)
         else:
             if self.text_content is None and root is not None:
                 root.text = self._tostring(data)
             else:
-                result.append(self.element(self._tostring(data)))
+                try:
+                    element = self.element(self._tostring(data))
+                    result.append(element)
+                except ValueError:
+                    if not drop_invalid_tags:
+                        raise ValueError('Invalid tag ' + str(data))
         return result
 
     def data(self, root):
@@ -132,7 +149,8 @@ class XMLData(object):
         value = self.dict()
         children = [node for node in root if isinstance(node.tag, basestring)]
         for attr, attrval in root.attrib.items():
-            attr = attr if self.attr_prefix is None else self.attr_prefix + attr
+            attr = attr if self.attr_prefix is None else \
+                self.attr_prefix + attr
             value[attr] = self._fromstring(attrval)
         if root.text and self.text_content is not None:
             text = root.text.strip()
@@ -154,7 +172,8 @@ class XMLData(object):
 class BadgerFish(XMLData):
     '''Converts between XML and data using the BadgerFish convention'''
     def __init__(self, **kwargs):
-        super(BadgerFish, self).__init__(attr_prefix='@', text_content='$', **kwargs)
+        super(BadgerFish, self).__init__(attr_prefix='@', text_content='$',
+                                         **kwargs)
 
 
 class GData(XMLData):
@@ -167,7 +186,8 @@ class Yahoo(XMLData):
     '''Converts between XML and data using the Yahoo convention'''
     def __init__(self, **kwargs):
         kwargs.setdefault('xml_fromstring', False)
-        super(Yahoo, self).__init__(text_content='content', simple_text=True, **kwargs)
+        super(Yahoo, self).__init__(text_content='content', simple_text=True,
+                                    **kwargs)
 
 
 class Parker(XMLData):
@@ -178,7 +198,8 @@ class Parker(XMLData):
     def data(self, root, preserve_root=False):
         'Convert etree.Element into a dictionary'
         # If preserve_root is False, return the root element. This is easiest
-        # done by wrapping the XML in a dummy root element that will be ignored.
+        # done by wrapping the XML in a dummy root element that will be
+        # ignored.
         if preserve_root:
             new_root = root.makeelement('dummy_root', {})
             new_root.insert(0, root)
@@ -196,7 +217,8 @@ class Parker(XMLData):
             if count[child.tag] == 1:
                 result[child.tag] = self.data(child)
             else:
-                result.setdefault(child.tag, self.list()).append(self.data(child))
+                result.setdefault(child.tag,
+                                  self.list()).append(self.data(child))
 
         return result
 
@@ -204,7 +226,8 @@ class Parker(XMLData):
 class Abdera(XMLData):
     '''Converts between XML and data using the Abdera convention'''
     def __init__(self, **kwargs):
-        super(Abdera, self).__init__(simple_text=True, text_content=True, **kwargs)
+        super(Abdera, self).__init__(simple_text=True, text_content=True,
+                                     **kwargs)
 
     def data(self, root):
         '''Convert etree.Element into a dictionary'''
@@ -244,42 +267,60 @@ class Abdera(XMLData):
         return self.dict([(unicode(root.tag), value)])
 
 
-# The difference between Cobra and Abdera is that Cobra _always_ has 'attributes' keys,
-# 'children' key is remove when only one child and everything is a string.
+# The difference between Cobra and Abdera is that Cobra _always_ has
+# 'attributes' keys, 'children' key is remove when only one child and
+# everything is a string.
 # https://github.com/datacenter/cobra/blob/master/cobra/internal/codec/jsoncodec.py
 class Cobra(XMLData):
     '''Converts between XML and data using the Cobra convention'''
     def __init__(self, **kwargs):
         super(Cobra, self).__init__(simple_text=True, text_content=True,
                                     xml_fromstring=False, **kwargs)
-    def etree(self, data, root=None):
+
+    def etree(self, data, root=None, drop_invalid_tags=False):
         '''Convert data structure into a list of etree.Element'''
         result = self.list() if root is None else root
         if isinstance(data, (self.dict, dict)):
             for key, value in data.items():
                 if isinstance(value, (self.dict, dict)):
-                    elem = self.element(key)
-                    result.append(elem)
+                    try:
+                        elem = self.element(key)
+                        result.append(elem)
+                    except ValueError:
+                        if not drop_invalid_tags:
+                            raise ValueError('Invalid tag ' + str(key))
+                        else:
+                            continue
 
                     if 'attributes' in value:
                         for k, v in value['attributes'].items():
                             elem.set(k, self._tostring(v))
                     # else:
-                    #     raise ValueError("Cobra convention requires an attributes key for each element")
+                    #     raise ValueError("Cobra convention requires an
+                    #     attributes key for each element")
 
                     if 'children' in value:
                         for v in value['children']:
-                            self.etree(v, root=elem)
+                            self.etree(v, root=elem,
+                                       drop_invalid_tags=drop_invalid_tags)
                 else:
-                    elem = self.element(key)
-                    elem.text = self._tostring(value)
-                    result.append(elem)
+                    try:
+                        elem = self.element(key)
+                        elem.text = self._tostring(value)
+                        result.append(elem)
+                    except ValueError:
+                        if not drop_invalid_tags:
+                            raise ValueError('Invalid tag ' + str(key))
         else:
             if root is not None:
                 root.text = self._tostring(data)
             else:
-                result.append(self.element(self._tostring(data)))
-
+                try:
+                    element = self.element(self._tostring(data))
+                    result.append(element)
+                except ValueError:
+                    if not drop_invalid_tags:
+                        raise ValueError('Invalid tag ' + str(key))
         return result
 
     def data(self, root):
