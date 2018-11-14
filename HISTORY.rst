@@ -2,6 +2,13 @@
 
 History
 -------
+0.1.9.1 (14 Nov 2018)
+~~~~~~~~~~~~~~~~~~~~~
+- Add the keyword argument "drop_invalid_tags=False" to the etree methods
+  to allow the suppression of the ValueError raised by lxml when a tag 
+  is encountered that contains illegal characters.
+
+Thanks to @Zurga
 
 0.1.9 (1 Aug 2017)
 ~~~~~~~~~~~~~~~~~~
