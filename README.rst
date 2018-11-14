@@ -77,6 +77,13 @@ result is identical to::
 
 .. _etree.Element: http://effbot.org/zone/element-index.htm
 
+If the data contains keys which have characters which cannot be used in tag
+names by XML, these can be dropped by setting the ``drop_invalid_tags=True``
+in the etree method::
+
+    >>> bf.etree({'1': '2', 'test': 'works'}, drop_invalid_tags=True)
+    [<Element test at 0x7f4f91d1d088>]
+
 The result can be inserted into any existing root `etree.Element`_::
 
     >>> from xml.etree.ElementTree import Element, tostring
@@ -107,7 +114,6 @@ case). Override this behaviour using ``xml_fromstring``::
     >>> bf_str = BadgerFish(xml_tostring=str)       # convert using str()
     >>> tostring(bf_str.etree({'x': 1.23, 'y': True}, root=Element('root')))
     '<root><y>True</y><x>1.23</x></root>'
-
 
 Convert XML to data
 -------------------
