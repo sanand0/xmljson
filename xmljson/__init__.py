@@ -19,7 +19,8 @@ if sys.version_info[0] == 3:
 
 class XMLData(object):
     def __init__(self, xml_fromstring=True, xml_tostring=True, element=None, dict_type=None,
-                 list_type=None, attr_prefix=None, text_content=None, simple_text=False):
+                 list_type=None, attr_prefix=None, text_content=None, simple_text=False,
+                 invalid_tags=None):
         # xml_fromstring == False(y) => '1' -> '1'
         # xml_fromstring == True     => '1' -> 1
         # xml_fromstring == fn       => '1' -> fn(1)
@@ -43,6 +44,18 @@ class XMLData(object):
         # simple_text == False or None or 0 => '<x>a</x>' = {'x': {'a': {}}}
         # simple_text == True               => '<x>a</x>' = {'x': 'a'}
         self.simple_text = simple_text
+        # invalid_tags == 'drop' => tags like $ are ignored
+        if invalid_tags == 'drop':
+            self._element = self.element
+            self.element = self._make_valid_element
+        elif invalid_tags != None:
+            raise TypeError('invalid_tags can be "drop" or None, not "%s"' % invalid_tags)
+
+    def _make_valid_element(self, key):
+        try:
+            return self._element(key)
+        except (TypeError, ValueError):
+            pass
 
     @staticmethod
     def _tostring(value):
@@ -116,6 +129,8 @@ class XMLData(object):
                 values = value if value_is_list else [value]
                 for value in values:
                     elem = self.element(key)
+                    if elem is None:
+                        continue
                     result.append(elem)
                     # Treat scalars as text content, not children (Parker)
                     if not isinstance(value, (self.dict, dict, self.list, list)):
@@ -126,7 +141,9 @@ class XMLData(object):
             if self.text_content is None and root is not None:
                 root.text = self._tostring(data)
             else:
-                result.append(self.element(self._tostring(data)))
+                elem = self.element(self._tostring(data))
+                if elem is not None:
+                    result.append(elem)
         return result
 
     def data(self, root):
@@ -254,6 +271,7 @@ class Cobra(XMLData):
     def __init__(self, **kwargs):
         super(Cobra, self).__init__(simple_text=True, text_content=True,
                                     xml_fromstring=False, **kwargs)
+
     def etree(self, data, root=None):
         '''Convert data structure into a list of etree.Element'''
         result = self.list() if root is None else root
@@ -261,6 +279,8 @@ class Cobra(XMLData):
             for key, value in data.items():
                 if isinstance(value, (self.dict, dict)):
                     elem = self.element(key)
+                    if elem is None:
+                        continue
                     result.append(elem)
 
                     if 'attributes' in value:
@@ -274,13 +294,17 @@ class Cobra(XMLData):
                             self.etree(v, root=elem)
                 else:
                     elem = self.element(key)
+                    if elem is None:
+                        continue
                     elem.text = self._tostring(value)
                     result.append(elem)
         else:
             if root is not None:
                 root.text = self._tostring(data)
             else:
-                result.append(self.element(self._tostring(data)))
+                elem = self.element(self._tostring(data))
+                if elem is not None:
+                    result.append(elem)
 
         return result
 

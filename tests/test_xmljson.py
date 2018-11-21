@@ -69,10 +69,6 @@ class TestCLI(unittest.TestCase):
 
 
 class TestXmlJson(unittest.TestCase):
-
-    def setUp(self):
-        pass
-
     def check_etree(self, conv, tostring=tostring, fromstring=fromstring):
         'Returns method(obj, xmlstring) that converts obj to XML and compares'
         checker = LXMLOutputChecker()
@@ -95,6 +91,20 @@ class TestXmlJson(unittest.TestCase):
             self.assertEqual(first, second)
 
         return compare
+
+    invalid_tags = [
+        '0n',       # does not start with letter or underscore
+        'x y',      # has space
+    ]
+
+    def check_invalid_tags(self, cls):
+        'Checks if invalid tags are dropped'
+        with self.assertRaises(TypeError):
+            cls(invalid_tags='not applicable')
+        # use lxml for invalid tags. xml.etree.ElementTree ACCEPTS invalid tags!
+        conv = cls(element=lxml.etree.Element, invalid_tags='drop')
+        for tag in self.invalid_tags:
+            self.assertEqual(conv.etree({tag: 1}), [])
 
 
 class TestBadgerFish(TestXmlJson):
@@ -153,6 +163,8 @@ class TestBadgerFish(TestXmlJson):
         # Attributes go in properties whose names begin with @.
         eq({'alice': {'$': 'bob', '@charlie': 'david'}},
             '<alice charlie="david">bob</alice>')
+
+        self.check_invalid_tags(xmljson.BadgerFish)
 
     def test_html(self):
         'BadgerFish conversion from data to HTML'
@@ -291,6 +303,8 @@ class TestGData(TestXmlJson):
         eq({'alice': {'$t': 'bob'}},
             '<alice>bob</alice>')
 
+        self.check_invalid_tags(xmljson.GData)
+
     def test_data(self):
         'GData conversion from data to etree'
         eq = self.check_data(xmljson.gdata)
@@ -375,6 +389,8 @@ class TestParker(TestXmlJson):
         # Multiple elements at the same level become array elements.
         eq({'alice': {'bob': [{'charlie': {}}, {'david': {}}]}},
            '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
+
+        self.check_invalid_tags(xmljson.Parker)
 
     def _test_data(self):
         'Parker conversion from etree to data'
@@ -648,8 +664,6 @@ class TestCobra(TestXmlJson):
            '<animal><dog>Charlie</dog><cat>Deka</cat></animal>')
         eq({'animal': {'attributes': {}, 'children': [{'dog': 'Charlie'}, {'dog': 'Mad Max'}]}},
            '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
-        #eq({'animal': {'attributes': {}, 'children': [{'dog': {'attributes': {}, 'children': ['Charlie', 'Mad Max']}}]}},
-        #   '<animal><dog>Charlie</dog><dog>Mad Max</dog></animal>')
         eq({'animal': {'attributes': {'dog': 'Charlie', 'cat': 'Deka'}}},
            '<animal dog="Charlie" cat="Deka"/>')
         eq({'animal': {'attributes': {}, 'children': [' in my house ', {'dog': 'Charlie'}]}},
@@ -678,6 +692,8 @@ class TestCobra(TestXmlJson):
             {'bob': {'attributes': {}, 'children': [{'charlie': {'attributes': {}}}]}},
             {'bob': {'attributes': {}, 'children': [{'david': {'attributes': {}}}]}}]}},
            '<alice><bob><charlie/></bob><bob><david/></bob></alice>')
+
+        self.check_invalid_tags(xmljson.Cobra)
 
     @unittest.skip('To be written')
     def test_html(self):

@@ -108,6 +108,14 @@ case). Override this behaviour using ``xml_fromstring``::
     >>> tostring(bf_str.etree({'x': 1.23, 'y': True}, root=Element('root')))
     '<root><y>True</y><x>1.23</x></root>'
 
+If the data contains invalid XML keys, these can be dropped via
+``invalid_tags='drop'`` in the constructor::
+
+    >>> bf_drop = BadgerFish(invalid_tags='drop')
+    >>> data = bf_drop.etree({'$': '1', 'x': '1'}, root=Element('root'))    # Drops invalid <$> tag
+    >>> tostring(data)
+    '<root>1<x>1</x></root>'
+
 
 Convert XML to data
 -------------------
