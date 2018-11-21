@@ -362,6 +362,7 @@ class TestParker(TestXmlJson):
             ('x', 'a'),
             ('y', 'b')
         ]), '<x>a</x>', '<y>b</y>')
+        eq({'x': None}, '<x/>')     # None becomes an empty string
         with self.assertRaises(Exception):
             eq({'x': {'@x': 1}}, '<x x="1"/>')
 

@@ -51,6 +51,8 @@ class XMLData(object):
             value = 'true'
         elif value is False:
             value = 'false'
+        elif value is None:
+            value = ''
         return unicode(value)       # noqa: convert to whatever native unicode repr
 
     @staticmethod
