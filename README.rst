@@ -186,9 +186,44 @@ The `Parker`_ convention absorbs the root element by default.
 Installation
 ------------
 
-This is a pure-Python package built for Python 2.6+ and Python 3.0+. To set up::
+This is a pure-Python package built for Python 2.7+ and Python 3.0+. To set up::
 
     pip install xmljson
+
+
+Simple CLI utility
+------------------
+
+After installation, you can benefit from using this package as simple CLI utility. By now only XML to JSON conversion supported. Example::
+
+    $ python -m xmljson -h
+    usage: xmljson [-h] [-o OUT_FILE]
+                [-d {abdera,badgerfish,cobra,gdata,parker,xmldata,yahoo}]
+                [in_file]
+
+    positional arguments:
+    in_file               defaults to stdin
+
+    optional arguments:
+    -h, --help            show this help message and exit
+    -o OUT_FILE, --out_file OUT_FILE
+                            defaults to stdout
+    -d {abdera,badgerfish,...}, --dialect {...}
+                            defaults to parker
+
+    $ python -m xmljson -d parker tests/mydata.xml
+    {
+      "foo": "spam",
+      "bar": 42
+    }
+
+This is a typical UNIX filter program: it reads file (or ``stdin``), processes it in some way (convert XML to JSON in this case), then prints it to ``stdout`` (or file). Example with pipe::
+
+    $ some-xml-producer | python -m xmljson | some-json-processor
+
+There is also ``pip``'s ``console_script`` entry-point, you can call this utility as ``xml2json``::
+
+    $ xml2json -d abdera mydata.xml
 
 Roadmap
 -------

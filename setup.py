@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+import io
 
 try:
     from setuptools import setup
@@ -8,10 +8,10 @@ except ImportError:
     from distutils.core import setup
 import xmljson
 
-with open('README.rst') as readme_file:
+with io.open('README.rst', encoding='utf-8') as readme_file:
     readme = readme_file.read()
 
-with open('HISTORY.rst') as history_file:
+with io.open('HISTORY.rst', encoding='utf-8') as history_file:
     history = history_file.read().replace('.. :changelog:', '')
 
 setup(
@@ -46,4 +46,9 @@ setup(
     ],
     test_suite='tests',
     tests_require=['lxml'],
+    entry_points={
+        'console_scripts': [
+            'xml2json = xmljson.__main__:main'
+        ]
+    }
 )

@@ -21,6 +21,7 @@ import lxml.html
 import lxml.etree
 import xml.etree.cElementTree
 import xmljson
+from xmljson.__main__ import main, parse, closing
 
 _folder = os.path.dirname(os.path.abspath(__file__))
 
@@ -28,14 +29,43 @@ _folder = os.path.dirname(os.path.abspath(__file__))
 if sys.version_info[0] == 3:
     def decode(s):
         return s.decode('utf-8')
+
+    def openwrite(path):
+        return io.open(path, 'w', encoding='utf-8')
+
 elif sys.version_info[0] == 2:
     def decode(s):
         return s
+
+    def openwrite(path):
+        return io.open(path, 'wb')
 
 
 def read(path):
     with io.open(os.path.join(_folder, path), 'r', encoding='utf-8') as handle:
         return handle.read()
+
+
+class TestCLI(unittest.TestCase):
+    tmp = os.path.join(_folder, 'delete-output.json')
+
+    def test_cli(self):
+        dialects = [xmljson.Abdera(), xmljson.BadgerFish(), xmljson.Cobra(),
+                    xmljson.GData(), xmljson.Parker(), xmljson.Yahoo()]
+
+        for dialect in dialects:
+            for path in ['abdera-1.xml', 'abdera-2.xml', 'abdera-3.xml', 'abdera-4.xml']:
+                in_file = io.open(os.path.join(_folder, path), encoding='utf-8')
+                out_file = openwrite(self.tmp)
+                main(in_file, out_file, dialect)
+                in_file = io.open(os.path.join(_folder, path), encoding='utf-8')
+                out_file = io.open(self.tmp, encoding='utf-8')
+                with closing(in_file), closing(out_file):
+                    self.assertEqual(json.load(out_file), dialect.data(parse(in_file).getroot()))
+
+    def tearDown(self):
+        if os.path.exists(self.tmp):
+            os.remove(self.tmp)
 
 
 class TestXmlJson(unittest.TestCase):
