@@ -121,7 +121,7 @@ Release
 
 3. Commit, create an annotated tag and push the code::
 
-    git commit .
+    git commit . -m"Release vx.x.x"
     git tag -a vx.x.x
     git push --follow-tags
 

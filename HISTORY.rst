@@ -2,6 +2,11 @@
 
 History
 -------
+0.2.0 (21 Nov 2018)
+~~~~~~~~~~~~~~~~~~~~~
+- ``xmljson`` command line script converts from XML to JSON (@tribals)
+- ``invalid_tags='drop'`` in the constructor drops invalid XML tags in ``.etree()`` (@Zurga)
+- Bugfix: Parker converts `{'x': null}` to `<x></x>` instead of `<x>None</x>` (@jorndoe #29)
 
 0.1.9 (1 Aug 2017)
 ~~~~~~~~~~~~~~~~~~

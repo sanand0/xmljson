@@ -9,7 +9,7 @@ except ImportError:
 
 __author__ = 'S Anand'
 __email__ = 'root.node@gmail.com'
-__version__ = '0.1.9'
+__version__ = '0.2.0'
 
 # Python 3: define unicode() as str()
 if sys.version_info[0] == 3:
@@ -48,7 +48,7 @@ class XMLData(object):
         if invalid_tags == 'drop':
             self._element = self.element
             self.element = self._make_valid_element
-        elif invalid_tags != None:
+        elif invalid_tags is not None:
             raise TypeError('invalid_tags can be "drop" or None, not "%s"' % invalid_tags)
 
     def _make_valid_element(self, key):
@@ -287,7 +287,7 @@ class Cobra(XMLData):
                         for k, v in value['attributes'].items():
                             elem.set(k, self._tostring(v))
                     # else:
-                    #     raise ValueError("Cobra convention requires an attributes key for each element")
+                    #     raise ValueError('Cobra requires "attributes" key for each element')
 
                     if 'children' in value:
                         for v in value['children']:
