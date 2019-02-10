@@ -198,7 +198,7 @@ class Parker(XMLData):
         super(Parker, self).__init__(**kwargs)
 
     def data(self, root, preserve_root=False):
-        'Convert etree.Element into a dictionary'
+        '''Convert etree.Element into a dictionary'''
         # If preserve_root is False, return the root element. This is easiest
         # done by wrapping the XML in a dummy root element that will be ignored.
         if preserve_root:
@@ -235,9 +235,9 @@ class Abdera(XMLData):
 
         # Add attributes specific 'attributes' key
         if root.attrib:
-            value[u'attributes'] = self.dict()
+            value['attributes'] = self.dict()
             for attr, attrval in root.attrib.items():
-                value[u'attributes'][unicode(attr)] = self._fromstring(attrval)
+                value['attributes'][unicode(attr)] = self._fromstring(attrval)
 
         # Add children to specific 'children' key
         children_list = self.list()
@@ -261,7 +261,7 @@ class Abdera(XMLData):
             value = children_list[0]
 
         elif len(children_list) > 0:
-            value[u'children'] = children_list
+            value['children'] = children_list
 
         return self.dict([(unicode(root.tag), value)])
 
@@ -317,10 +317,10 @@ class Cobra(XMLData):
         value = self.dict()
 
         # Add attributes to 'attributes' key (sorted!) even when empty
-        value[u'attributes'] = self.dict()
+        value['attributes'] = self.dict()
         if root.attrib:
             for attr in sorted(root.attrib):
-                value[u'attributes'][unicode(attr)] = root.attrib[attr]
+                value['attributes'][unicode(attr)] = root.attrib[attr]
 
         # Add children to specific 'children' key
         children_list = self.list()
@@ -348,7 +348,7 @@ class Cobra(XMLData):
                 children_list.append(self.data(child))
 
         if len(children_list) > 0:
-            value[u'children'] = children_list
+            value['children'] = children_list
 
         return self.dict([(unicode(root.tag), value)])
 
