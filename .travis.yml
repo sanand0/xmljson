@@ -19,5 +19,5 @@ install:
 
 # command to run tests, e.g. python setup.py test
 script:
-    - flake8
+    - flake8 xmljson tests
     - python setup.py test

@@ -215,7 +215,7 @@ class TestBadgerFish(TestXmlJson):
     def test_xml_namespace(self):
         'XML namespaces are not yet implemented'
         with self.assertRaises(ValueError):
-            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http:\/\/some-namespace'}}})
+            xmljson.badgerfish.etree({'alice': {'@xmlns': {'$': 'http://some-namespace'}}})
 
     def test_custom_dict(self):
         'Conversion to dict uses OrderedDict'
