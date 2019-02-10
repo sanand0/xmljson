@@ -6,7 +6,6 @@ try:
     from setuptools import setup
 except ImportError:
     from distutils.core import setup
-import xmljson
 
 with io.open('README.rst', encoding='utf-8') as readme_file:
     readme = readme_file.read()
@@ -16,7 +15,7 @@ with io.open('HISTORY.rst', encoding='utf-8') as history_file:
 
 setup(
     name='xmljson',
-    version=xmljson.__version__,
+    version='0.2.0',
     description='Converts XML into JSON/Python dicts/arrays and vice-versa.',
     long_description=readme + '\n\n' + history,
     author='S Anand',
@@ -41,6 +40,7 @@ setup(
         'Programming Language :: Python :: 2.7',    # For collections.Counter
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Software Development',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ],

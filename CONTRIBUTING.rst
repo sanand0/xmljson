@@ -115,7 +115,7 @@ Release
 
     make release-test
 
-2. Update ``__version__ = x.x.x`` in :mod:`xmljson`
+2. Update ``__version__ = x.x.x`` in :mod:`xmljson` and in ``setup.py``
 
 3. Update ``HISTORY.rst`` with changes
 
