@@ -167,6 +167,9 @@ class XMLData(object):
             else:
                 result = value.setdefault(child.tag, self.list())
                 result += self.data(child).values()
+        # if simple_text, elements with no children or attrs become '', not {}
+        if not value and self.simple_text:
+            value = ''
         return self.dict([(root.tag, value)])
 
 

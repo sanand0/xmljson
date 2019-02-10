@@ -576,6 +576,10 @@ class TestYahoo(TestXmlJson):
         }''', object_pairs_hook=Dict)
 
         eq(json.dumps(data), result)
+        eq('{"x": ""}', '<x/>')
+        eq('{"x": "text"}', '<x>text</x>')
+        eq('{"x": {"key": "val"}}', '<x key="val"></x>')
+        eq('{"x": {"key": "val", "content": "text"}}', '<x key="val">text</x>')
 
     def test_xml_fromstring(self):
         'xml_fromstring=False does not convert types'
