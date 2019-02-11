@@ -518,10 +518,14 @@ class TestParker(TestXmlJson):
 
 
 class TestYahoo(TestXmlJson):
-    @unittest.skip('To be written')
     def test_etree(self):
         'Yahoo conversion from data to etree'
-        pass
+        eq = self.check_etree(xmljson.yahoo)
+        eq({'x': ''}, '<x/>')
+        eq({'x': 0}, '<x>0</x>')
+        eq({'x': 'text'}, '<x>text</x>')
+        eq({'x': {'key': 'val'}}, '<x key="val"></x>')
+        eq({'x': {'key': 'val', 'content': 'text'}}, '<x key="val">text</x>')
 
     def test_data(self):
         'Yahoo conversion from etree to data'
@@ -577,9 +581,14 @@ class TestYahoo(TestXmlJson):
 
         eq(json.dumps(data), result)
         eq('{"x": ""}', '<x/>')
+        eq('{"x": "0"}', '<x>0</x>')
+        eq('{"x": "False"}', '<x>False</x>')
         eq('{"x": "text"}', '<x>text</x>')
         eq('{"x": {"key": "val"}}', '<x key="val"></x>')
         eq('{"x": {"key": "val", "content": "text"}}', '<x key="val">text</x>')
+        eq2 = self.check_data(xmljson.Yahoo(xml_fromstring=True))
+        eq2('{"x": 0}', '<x>0</x>')
+        eq2('{"x": false}', '<x>False</x>')
 
     def test_xml_fromstring(self):
         'xml_fromstring=False does not convert types'
