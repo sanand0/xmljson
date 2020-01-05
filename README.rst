@@ -8,6 +8,12 @@ xmljson
 .. image:: https://img.shields.io/pypi/v/xmljson.svg
         :target: https://pypi.python.org/pypi/xmljson
 
+This library is not actively maintained. Alternatives are `xmltodict`_ and `untangle`_.
+Use only if you need to parse using specific XML to JSON `conventions`_.
+
+.. _conventions: http://wiki.open311.org/JSON_and_XML_Conversion/
+.. _xmltodict: https://github.com/martinblech/xmltodict
+.. _untangle: https://untangle.readthedocs.io/en/latest/
 
 xmljson converts XML into Python dictionary structures (trees, like in JSON) and vice-versa.
 
