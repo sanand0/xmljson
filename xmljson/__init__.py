@@ -154,8 +154,8 @@ class XMLData(object):
             attr = attr if self.attr_prefix is None else self.attr_prefix + attr
             value[attr] = self._fromstring(attrval)
         if root.text and self.text_content is not None:
-            text = root.text.strip()
-            if text:
+            text = root.text
+            if text.strip():
                 if self.simple_text and len(children) == len(root.attrib) == 0:
                     value = self._fromstring(text)
                 else:
@@ -245,8 +245,8 @@ class Abdera(XMLData):
 
         # Add root text
         if root.text and self.text_content is not None:
-            text = root.text.strip()
-            if text:
+            text = root.text
+            if text.strip():
                 if self.simple_text and len(children) == len(root.attrib) == 0:
                     value = self._fromstring(text)
                 else:
@@ -328,8 +328,8 @@ class Cobra(XMLData):
 
         # Add root text
         if root.text and self.text_content is not None:
-            text = root.text.strip()
-            if text:
+            text = root.text
+            if text.strip():
                 if self.simple_text and len(children) == len(root.attrib) == 0:
                     value = self._fromstring(text)
                 else:
