@@ -175,18 +175,21 @@ class XMLData(object):
 
 class BadgerFish(XMLData):
     '''Converts between XML and data using the BadgerFish convention'''
+
     def __init__(self, **kwargs):
         super(BadgerFish, self).__init__(attr_prefix='@', text_content='$', **kwargs)
 
 
 class GData(XMLData):
     '''Converts between XML and data using the GData convention'''
+
     def __init__(self, **kwargs):
         super(GData, self).__init__(text_content='$t', **kwargs)
 
 
 class Yahoo(XMLData):
     '''Converts between XML and data using the Yahoo convention'''
+
     def __init__(self, **kwargs):
         kwargs.setdefault('xml_fromstring', False)
         super(Yahoo, self).__init__(text_content='content', simple_text=True, **kwargs)
@@ -194,6 +197,7 @@ class Yahoo(XMLData):
 
 class Parker(XMLData):
     '''Converts between XML and data using the Parker convention'''
+
     def __init__(self, **kwargs):
         super(Parker, self).__init__(**kwargs)
 
@@ -225,6 +229,7 @@ class Parker(XMLData):
 
 class Abdera(XMLData):
     '''Converts between XML and data using the Abdera convention'''
+
     def __init__(self, **kwargs):
         super(Abdera, self).__init__(simple_text=True, text_content=True, **kwargs)
 
@@ -271,6 +276,7 @@ class Abdera(XMLData):
 # https://github.com/datacenter/cobra/blob/master/cobra/internal/codec/jsoncodec.py
 class Cobra(XMLData):
     '''Converts between XML and data using the Cobra convention'''
+
     def __init__(self, **kwargs):
         super(Cobra, self).__init__(simple_text=True, text_content=True,
                                     xml_fromstring=False, **kwargs)
@@ -353,9 +359,53 @@ class Cobra(XMLData):
         return self.dict([(unicode(root.tag), value)])
 
 
+# Converts XML to JSON using the Spark Convention.
+# Specified tags are considered as single element arrays if there is only one child
+class Spark(XMLData):
+    '''Converts between XML and data using the Spark convention'''
+
+    def __init__(self, **kwargs):
+        super(Spark, self).__init__(**kwargs)
+
+    # Param 'single_element_array_tags' specifies the tags to be treated as sigle element arrays
+    def data(self, root, preserve_root=False, single_element_array_tags=[]):
+        '''Convert etree.Element into a dictionary'''
+        # If preserve_root is False, return the root element. This is easiest
+        # done by wrapping the XML in a dummy root element that will be ignored.
+        if preserve_root:
+            new_root = root.makeelement('dummy_root', {})
+            new_root.insert(0, root)
+            root = new_root
+        # If no children, just return the text
+        children = [node for node in root if isinstance(node.tag, basestring)]
+        if len(children) == 0:
+            # For specified tags data is formatted as per 'single element array'
+            if root.tag in single_element_array_tags:
+                return [root.text]
+            return self._fromstring(root.text)
+
+        # Element names become object properties
+        count = Counter(child.tag for child in children)
+        result = self.dict()
+        for child in children:
+            # For specified tags data is formatted as per 'single element array'
+            if child.tag in single_element_array_tags:
+                result.setdefault(child.tag, self.list()).append(self.data(
+                    child, single_element_array_tags=single_element_array_tags))
+            elif count[child.tag] == 1:
+                result.setdefault(child.tag, self.list()).append(self.data(
+                    child, single_element_array_tags=single_element_array_tags))
+            else:
+                result.setdefault(child.tag, self.list()).append(self.data(
+                    child, single_element_array_tags=single_element_array_tags))
+
+        return result
+
+
 abdera = Abdera()
 badgerfish = BadgerFish()
 cobra = Cobra()
 gdata = GData()
 parker = Parker()
 yahoo = Yahoo()
+spark = Spark()
