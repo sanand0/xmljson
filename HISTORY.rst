@@ -2,6 +2,10 @@
 
 History
 -------
+0.2.1 (Unreleased)
+~~~~~~~~~~~~~~~~~~
+- Added ``pyproject.toml`` and uv install instructions while maintaining
+  Python 2.7 compatibility.
 0.2.0 (21 Nov 2018)
 ~~~~~~~~~~~~~~~~~~~~~
 - ``xmljson`` command line script converts from XML to JSON (@tribals)

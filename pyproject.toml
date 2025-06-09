@@ -1,0 +1,33 @@
+[build-system]
+requires = ["setuptools<45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xmljson"
+version = "0.2.1"
+description = "Converts XML into JSON/Python dicts/arrays and vice-versa."
+readme = "README.rst"
+requires-python = ">=2.7"
+authors = [{name = "S Anand", email = "root.node@gmail.com"}]
+license = {file = "LICENSE"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 2",
+    "Programming Language :: Python :: 2.7",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+[project.scripts]
+xml2json = "xmljson.__main__:main"
+
+[project.optional-dependencies]
+test = ["lxml", "pytest"]
+
+[tool.uv]
+managed = true
