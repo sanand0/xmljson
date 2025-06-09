@@ -200,9 +200,13 @@ The `Parker`_ convention absorbs the root element by default.
 Installation
 ------------
 
-This is a pure-Python package built for Python 2.7+ and Python 3.0+. To set up::
+This is a pure-Python package built for Python 2.7+ and Python 3.0+. To install
+using pip or the ``uv`` package manager::
 
     pip install xmljson
+
+    # or with uv
+    uv pip install xmljson
 
 
 Simple CLI utility
